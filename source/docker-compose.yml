@@ -8,3 +8,13 @@ services:
     environment:
       ARTEMIS_USER: admin
       ARTEMIS_PASSWORD: admin
+  converter:
+    build: ./converter_service
+    container_name: converter
+    depends_on:
+      - activemq
+    environment:
+      AMQ_HOST: activemq
+      AMQ_PORT: 61616
+      BACKEND_URL: http://host.docker.internal:8080
+      LOG_LEVEL: INFO

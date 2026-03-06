@@ -21,6 +21,12 @@
             </multicast>
          </address>
 
+         <address name="actuator.states">
+            <multicast>
+               <queue name="actuator.states"/>
+            </multicast>
+         </address>
+
          <address name="actuator.commands">
             <anycast>
                <queue name="actuator.commands"/>

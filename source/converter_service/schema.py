@@ -1,45 +1,75 @@
 """
-Unified internal event schema.
-Every message published to AMQ queues uses this format.
+Unified internal event schema — v2.
+Basato sulla proposta di Sara: group_id + metrics[].id + metrics[].type
 """
 
 from dataclasses import dataclass, field, asdict
-from typing import Literal, Any
 from datetime import datetime, timezone
+from typing import Any
 
 CONVERTER_VERSION = "1.0.0"
 
-SourceType = Literal["rest_sensor", "telemetry", "actuator"]
+
+@dataclass
+class MetricValue:
+    value: Any
+    unit: str
 
 
 @dataclass
-class Measurement:
-    metric: str
-    value: Any          # number or string (e.g. last_state in airlock)
-    unit: str = ""
+class Metric:
+    id: str
+    type: str
+    value: list[MetricValue]
 
 
 @dataclass
 class UnifiedEvent:
-    source_type: SourceType
-    source_schema: str
-    source_id: str
-    timestamp: str
+    group_id: str
+    at: str
+    metrics: list[Metric]
     status: str
-    measurements: list[Measurement] = field(default_factory=list)
     converter_version: str = CONVERTER_VERSION
 
     def to_dict(self) -> dict:
-        d = asdict(self)
-        # reorder for readability
         return {
-            "converter_version": d["converter_version"],
-            "source_type":       d["source_type"],
-            "source_schema":     d["source_schema"],
-            "source_id":         d["source_id"],
-            "timestamp":         d["timestamp"],
-            "status":            d["status"],
-            "measurements":      d["measurements"],
+            "converter_version": self.converter_version,
+            "group_id":          self.group_id,
+            "at":                self.at,
+            "metrics": [
+                {
+                    "id":    m.id,
+                    "type":  m.type,
+                    "value": [{"value": v.value, "unit": v.unit} for v in m.value],
+                }
+                for m in self.metrics
+            ],
+            "status": self.status,
+        }
+
+    @staticmethod
+    def now_iso() -> str:
+        return datetime.now(timezone.utc).isoformat()
+
+
+def metric(id: str, type: str, value: Any, unit: str) -> Metric:
+    """Shorthand per creare un Metric con un singolo valore."""
+    return Metric(id=id, type=type, value=[MetricValue(value=value, unit=unit)])
+
+
+# ─── Actuator Event ───────────────────────────────────────────────────────────
+
+@dataclass
+class ActuatorEvent:
+    actuator_id: str
+    is_on: bool
+    updated_at: str
+
+    def to_dict(self) -> dict:
+        return {
+            "actuator_id": self.actuator_id,
+            "is_on":       self.is_on,
+            "updated_at":  self.updated_at,
         }
 
     @staticmethod

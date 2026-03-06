@@ -6,8 +6,9 @@ Ogni client emette payload grezzi + schema string verso il Converter core.
 import asyncio
 import json
 import logging
-import httpx
 import os
+from datetime import datetime, timezone
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ async def fetch_all_actuators() -> list[dict]:
         # data = {"actuators": {"cooling": "ON", "heating": "OFF", ...}}
         actuators = data.get("actuators", {})
         return [
-            {"actuator": name, "state": state, "updated_at": None}
+            {"actuator_id": name, "is_on": state == "ON", "updated_at": datetime.now(timezone.utc).isoformat()}
             for name, state in actuators.items()
         ]
 

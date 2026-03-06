@@ -18,10 +18,9 @@ COPY --from=builder /install /usr/local
 # Copia sorgenti
 COPY schema.py .
 COPY main.py .
-COPY test_in_file.py .
 COPY normalizers/ ./normalizers/
 COPY clients/     ./clients/
-COPY queue/       ./queue/
+COPY amq/       ./amq/
 
 # Variabili d'ambiente con valori di default
 ENV AMQ_HOST=activemq \

@@ -10,12 +10,11 @@ Output:
 import asyncio
 import json
 import logging
-from datetime import datetime
 from pathlib import Path
 
 from normalizers.normalizers import normalize
 from clients.clients import poll_sensors, subscribe_all_topics, fetch_all_actuators
-from schema import UnifiedEvent
+from schema import UnifiedEvent, ActuatorEvent
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,22 +24,27 @@ logger = logging.getLogger("converter.test")
 
 POLL_INTERVAL = 5.0
 
-# ─── File writer ──────────────────────────────────────────────────────────────
+# ─── File writers ─────────────────────────────────────────────────────────────
 
 SENSORS_FILE   = Path("output_sensors.jsonl")
 ACTUATORS_FILE = Path("output_actuators.jsonl")
 
-def write_event(filepath: Path, event: UnifiedEvent):
-    with filepath.open("a") as f:
+def write_sensor_event(event: UnifiedEvent):
+    with SENSORS_FILE.open("a") as f:
         f.write(json.dumps(event.to_dict()) + "\n")
-    logger.info(f"[{filepath.name}] {event.source_type} | {event.source_id} | status={event.status}")
+    logger.info(f"[sensors] {event.group_id} | status={event.status}")
+
+def write_actuator_event(event: ActuatorEvent):
+    with ACTUATORS_FILE.open("a") as f:
+        f.write(json.dumps(event.to_dict()) + "\n")
+    logger.info(f"[actuators] {event.actuator_id} | is_on={event.is_on}")
 
 # ─── Event handlers ───────────────────────────────────────────────────────────
 
 async def on_sensor_event(schema: str, payload: dict):
     try:
         event = normalize(schema, payload)
-        write_event(SENSORS_FILE, event)
+        write_sensor_event(event)
     except Exception as e:
         logger.error(f"Normalization error [{schema}]: {e} — payload: {payload}")
 
@@ -52,7 +56,7 @@ async def boot_actuators():
     for payload in actuators:
         try:
             event = normalize("actuator.state.v1", payload)
-            write_event(ACTUATORS_FILE, event)
+            write_actuator_event(event)
         except Exception as e:
             logger.error(f"Boot actuator error: {e}")
     logger.info(f"Boot: written {len(actuators)} actuator states to {ACTUATORS_FILE}")
@@ -61,10 +65,9 @@ async def boot_actuators():
 
 async def main():
     logger.info("=== CONVERTER TEST MODE ===")
-    logger.info(f"Sensors  → {SENSORS_FILE.resolve()}")
+    logger.info(f"Sensors   → {SENSORS_FILE.resolve()}")
     logger.info(f"Actuators → {ACTUATORS_FILE.resolve()}")
 
-    # Pulisce i file precedenti ad ogni run
     SENSORS_FILE.unlink(missing_ok=True)
     ACTUATORS_FILE.unlink(missing_ok=True)
 
