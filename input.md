@@ -1,52 +1,26 @@
-
-Esempio del prof
-
 # SYSTEM DESCRIPTION:
 
-Not Far(m) From Home is a platform that allows a direct interaction between local farmers and consumers, with the main purpose of being “km 0”.
-The Farmers will be able to post their fresh produce in the site, and the consumers to reserve the produce and select a day for the pickup at the Agricoltural Company.
+MarsOps is a distributed automation platform designed to guarantee the survival of occupants in a Martian habitat by integrating heterogeneous IoT devices into a unified monitoring system.The platform acts as a bridge between a fragile habitat's infrastructure and the human operators. Operators can monitor critical environmental parameters (such as oxygen, temperature, and radiation) in real-time through a centralized dashboard. They can, also, define "if-then" rules to ensure that habitat actuators (like cooling fans or heaters) respond instantly to dangerous environmental shifts without manual intervention.
 
 # USER STORIES:
 
-1) As a Client , I want to Register in the site so that I can use the site
-2) As a Client , I want to login in the site so that I can use the site
-3) As a Client , I want to not put my Credentials in the site every time a reload the site, so that I can use the site
-4) As a Client , I want to logout, so that no one else use my account
-5) As a Client , I want to see my personal information
-6) As a Client , I want to See Hot products, so that i can discover the product in the season
-7) As a Client , I want to See Agricultural companies in my area, so that i can choose where to buy products
-8) As a Client , I want to See products for each Agricultural company, so that I can buy From them
-9) As a Client , I want to Add products to my cart, so that i can buy them
-10) As a Client, I want to Remove products from my cart, so that i can decide what to buy
-11) As a Client , I want to see the products in my cart, so that i can see want I am going to buy
-12) As a Client , I want to Complete an order, so that I can choose a date to go and pick up the products
-13) As a Client , I want to Open in google Maps the Location of the Agricultural company, so that i can find directions to it easly
-14) As an Agricultural Company, I want to Add products in inventory, so that I can show my clients the new produce
-15) As an Agricultural Company, I want to Remove products in inventory, so that My clients don't try to buy an item that I don't have anymore
-16) As an Agricultural Company, I want to Modify products in inventory, so that I can change price and quantities on an item
-17) As an Agricultural Company, I want to Registrer in the site, so that i can be visible and start doing business in the site
-18) As an Agricultural Company, I want to Login, so that i can work on the site
-19) As an Agricultural Company, I want to not put my Credentials in the site every time a reload the site, so that I can use the site easily
-20) As an Agricultural Company, I want to logout from the site
-21) As an Agricultural Company, I want to see my personal information
-22) As the Administrator of the site, I want to login in the site
-23) As the Administrator of the site, I want to not put my Credentials in the site every time a reload the site
-24) As the Administrator of the site, I want to logout from the site
-25) As the Administrator of the site, I want to delete malevolus user
-26) As the Administrator of the site, I want to see all orders, so that I can better analyze how the platform is doing
-27) As the Administrator of the site, I want to see all users, so that I can better analyze how the platform is doing
-28) As the Administrator of the site, I want to get user details, so that I can have some clear view over the user
-29) As the Administrator of the site, I want to modify users, so that I can do site maintenance
-30) As the Administrator of the site, I want to see all areas, so that I can do site maintenance
-31) As the Administrator of the site, I want to get all Agricultural company by areas, so that I can analyze how they are distributed
-32) As the Administrator of the site, I want to get all Agricultural company details, so that I can do platform maintenance
-33) As the Administrator of the site, I want to get product by seller, so that I can do site maintenance
-34) As the Administrator of the site, I want to get product by id, so that I can do site maintenance
-35) As the Administrator of the site, I want to add an area, so that if there is some request for that area to be added, I can
-36) As the Administrator of the site, I want to add product, so that I can do site maintenance
-37) As the Administrator of the site, I want to modify product, so that I can do site maintenance
-38) As the Administrator of the site, I want to delete product, so that I can do site maintenance
-39) As the Administrator of the site, I want to delete an area, so that I can do site maintenance
-40) As a client, i want to see all my orders
-41) As a farmer, i want to see all my orders
-Displaying input_example.txt.
+1) As an operator, I want the system to periodically poll all REST sensors (greenhouse_temperature, co2_hall, etc.) so that data is continuously updated without manual intervention.
+2) As an operator, I want the system to receive all telemetry data in real time.
+3) As a developer, I want every raw payload to be converted into a standard internal event so that downstream components work on homogeneous data.
+4) As an ingestion component, I want every normalized event to be published to a message broker topic so that all services can consume it in a decoupled way.
+5) As an operator, I want the system to fetch the list of sensors and topics at startup so that no manual configuration is required.
+6) As an operator, I want to create rules so that actuators respond automatically to habitat conditions.
+7) As the system, I want every incoming broker event to trigger evaluation of all relevant rules so that actuators are commanded in real time when conditions are met.
+8) As an operator, I want rules to survive service restarts so that I do not have to reconfigure them every time.
+9) As an operator, I want to see the list of all configured rules (condition, target actuator, status) so that I can keep track of what is automated.
+10) As an operator, I want to delete an existing rule so that I can remove automations that are no longer needed.
+11) As an operator, I want to see all sensor values updated automatically so that I can monitor the habitat without refreshing the page.
+12) As an operator, I want sensors with out-of-range values to be highlighted visually (e.g. red/orange) so that I can immediately identify dangerous situations.
+13) As an operator, I want to see a line chart of a sensor's trend during the current session so that I can spot patterns and anomalies over time.
+14) As an operator, I want to create, view and delete rules directly from the dashboard so that I do not need external tools.
+15) As an operator, I want to see a status indicator showing whether the system is connected so that I can immediately tell if the infrastructure is working.
+16) As the frontend, I want to retrieve the latest value of all sensors so that the dashboard can be populated on initial load.
+17) As an operator, I want to see the current ON/OFF state of all actuators in the dashboard so that I know what is active in the habitat.
+18) As an operator, I want to manually toggle an actuator on or off from the dashboard so that I can intervene directly in emergency situations.
+19) As an operator, I want the actuator state to update in the dashboard immediately after every command (whether manual or triggered by a rule) so that I always have a consistent view.
+20) As the system, I want to keep the last known state of each actuator in memory so that the dashboard and the rule engine can access it without querying the environment every time.
