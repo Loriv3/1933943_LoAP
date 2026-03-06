@@ -1,0 +1,17 @@
+{
+    "sensor_id": "air_quality_voc",
+    "captured_at": "2026-03-06T00:19:01.673715+00:00",
+    "measurements": [
+        {
+            "metric": "voc_ppb",
+            "value": 596.03,
+            "unit": "ppb"
+        },
+        {
+            "metric": "co2e_ppm",
+            "value": 569.2,
+            "unit": "ppm"
+        }
+    ],
+    "status": "ok"
+}

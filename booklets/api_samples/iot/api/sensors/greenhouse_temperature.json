@@ -1,0 +1,8 @@
+{
+    "sensor_id": "greenhouse_temperature",
+    "captured_at": "2026-03-05T23:52:17.130397+00:00",
+    "metric": "temperature_c",
+    "value": 23.83,
+    "unit": "C",
+    "status": "ok"
+}

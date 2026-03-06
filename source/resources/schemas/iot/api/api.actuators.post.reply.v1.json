@@ -1,0 +1,29 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "api.actuators.post.reply",
+    "type": "object",
+    "properties": {
+        "actuator": {
+            "type": "string",
+            "description": "The actuator this data refers to."
+        },
+        "state": {
+            "enum": [
+                "ON",
+                "OFF"
+            ],
+            "description": "This actuator's current state."
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9\\-]+T[0-9:]+\\.[0-9]+(Z|\\+[0-9:]+)?$",
+            "description": "The time at which this actuator was last updated."
+        }
+    },
+    "required": [
+        "actuator",
+        "state",
+        "updated_at"
+    ]
+}

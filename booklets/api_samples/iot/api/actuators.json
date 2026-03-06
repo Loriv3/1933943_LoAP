@@ -1,0 +1,8 @@
+{
+    "actuators": {
+        "cooling_fan": "OFF",
+        "entrance_humidifier": "OFF",
+        "hall_ventilation": "OFF",
+        "habitat_heater": "OFF"
+    }
+}

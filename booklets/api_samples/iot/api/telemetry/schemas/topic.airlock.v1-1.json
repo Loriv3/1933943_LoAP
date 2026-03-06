@@ -1,0 +1,7 @@
+{
+    "topic": "mars/telemetry/airlock",
+    "event_time": "2026-03-06T00:03:38.650819+00:00",
+    "airlock_id": "airlock-1",
+    "cycles_per_hour": 7.17,
+    "last_state": "IDLE"
+}

@@ -1,0 +1,7 @@
+{
+    "sensor_id": "water_tank_level",
+    "captured_at": "2026-03-06T00:17:41.986934+00:00",
+    "level_pct": 75.89,
+    "level_liters": 3035.6,
+    "status": "ok"
+}

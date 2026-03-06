@@ -1,0 +1,11 @@
+{
+    "topics": [
+        "mars/telemetry/solar_array",
+        "mars/telemetry/radiation",
+        "mars/telemetry/life_support",
+        "mars/telemetry/thermal_loop",
+        "mars/telemetry/power_bus",
+        "mars/telemetry/power_consumption",
+        "mars/telemetry/airlock"
+    ]
+}

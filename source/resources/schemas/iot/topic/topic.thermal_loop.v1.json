@@ -1,0 +1,42 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "topic.thermal_loop.v1",
+    "type": "object",
+    "properties": {
+        "topic": {
+            "type": "string",
+            "description": "The topic this data refers to.",
+            "pattern": "^[^\\.]$"
+        },
+        "event_time": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9\\-]+T[0-9:]+\\.[0-9]+(Z|\\+[0-9:]+)?$",
+            "description": "The time at which this event was emitted."
+        },
+        "loop": {
+            "type": "string",
+            "pattern": "^[^\\.]$"
+        },
+        "temperature_c": {
+            "type": "number"
+        },
+        "flow_l_min": {
+            "type": "number"
+        },
+        "status": {
+            "enum": [
+                "ok",
+                "warning"
+            ]
+        }
+    },
+    "required": [
+        "topic",
+        "event_time",
+        "loop",
+        "temperature_c",
+        "flow_l_min",
+        "status"
+    ]
+}

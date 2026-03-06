@@ -1,0 +1,8 @@
+{
+    "sensor_id": "co2_hall",
+    "captured_at": "2026-03-06T00:06:45.727854+00:00",
+    "metric": "co2_ppm",
+    "value": 758.56,
+    "unit": "ppm",
+    "status": "ok"
+}

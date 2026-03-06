@@ -1,0 +1,371 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Metrics group",
+    "type": "object",
+    "properties": {
+        "group_id": {
+            "type": "string",
+            "description": "The ID of the group this data refers to."
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9\\-]+T[0-9:]+\\.[0-9]+(Z|\\+[0-9:]+)?$",
+            "description": "The time at which this data was collected."
+        },
+        "metrics": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/metric" },
+            "minItems": 1
+        },
+        "status": {
+            "enum": [
+                "ok",
+                "warning",
+                null
+            ]
+        }
+    },
+    "required": [
+        "group_id",
+        "updated_at",
+        "metrics",
+        "status"
+    ],
+    "$defs": {
+        "metric": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Device metric",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "ph"
+                        },
+                        "value": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "pH"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "air_quality.particle_volume_concentration"
+                        },
+                        "value": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "ppm"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "air_quality.volume_volume_concentration"
+                        },
+                        "value": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "%"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "air_quality.mass_volume_concentration"
+                        },
+                        "value": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "g/m3"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "water_level"
+                        },
+                        "value": {
+                            "allOf": [
+                                {
+                                    "contains": {
+                                        "properties": {
+                                            "unit": {
+                                                "const": "L"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "contains": {
+                                        "properties": {
+                                            "unit": {
+                                                "const": "%"
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "minItems": 2,
+                            "maxItems": 2
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "temperature"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "C"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "humidity"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "%"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "pressure"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "Pa"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "cycles_per_hour"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "h^-1"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "radiation"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "Sv/h"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "power.power"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "W"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "power.cumulative_power"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "Wh"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "power.voltage"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "V"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "power.current"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "A"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "flow"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "unit": {
+                                        "const": "L/min"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                }
+            ],
+            "$defs": {
+                "baseMetric": {
+                    "type": "object",
+                    "properties": {
+                        "metric_id": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "oneOf": [
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "value": {
+                                                "type": "number"
+                                            },
+                                            "unit": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "value",
+                                            "unit"
+                                        ]
+                                    },
+                                    "minItems": 1
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    },
+                    "required": [
+                        "metric_id",
+                        "type",
+                        "value"
+                    ]
+                }
+            }
+        }
+    }
+}

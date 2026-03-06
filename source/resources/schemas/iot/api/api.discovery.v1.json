@@ -1,0 +1,68 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "api.discovery",
+    "type": "object",
+    "properties": {
+        "schema_version": {
+            "type": "string"
+        },
+        "schema_policy": {
+            "type": "string"
+        },
+        "rest_sensors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "sensor_id": {
+                        "type": "string",
+                        "pattern": "^[^\\.]$"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "schema_id": {
+                        "type": "string",
+                        "pattern": "^rest\\."
+                    }
+                },
+                "required": [
+                    "sensor_id",
+                    "path",
+                    "schema_id"
+                ]
+            }
+        },
+        "pubsub_streams": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "topic": {
+                        "type": "string",
+                        "pattern": "^[^\\.]$"
+                    },
+                    "sse": {
+                        "type": "string"
+                    },
+                    "ws": {
+                        "type": "string"
+                    },
+                    "schema_id": {
+                        "type": "string",
+                        "pattern": "^topic\\."
+                    }
+                },
+                "required": [
+                    "topic",
+                    "sse",
+                    "ws",
+                    "schema_id"
+                ]
+            }
+        }
+    },
+    "required": [
+        "schema_version, schema_policy, rest_sensors, pubsub_streams"
+    ]
+}

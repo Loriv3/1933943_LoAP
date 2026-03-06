@@ -1,0 +1,41 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "rest.particulate.v1",
+    "type": "object",
+    "properties": {
+        "sensor_id": {
+            "type": "string",
+            "description": "The sensor this data refers to.",
+            "pattern": "^[^\\.]$"
+        },
+        "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9\\-]+T[0-9:]+\\.[0-9]+(Z|\\+[0-9:]+)?$",
+            "description": "The time at which this measurement was captured."
+        },
+        "pm1_ug_m3": {
+            "type": "number"
+        },
+        "pm25_ug_m3": {
+            "type": "number"
+        },
+        "pm10_ug_m3": {
+            "type": "number"
+        },
+        "status": {
+            "enum": [
+                "ok",
+                "warning"
+            ]
+        }
+    },
+    "required": [
+        "sensor_id",
+        "captured_at",
+        "pm1_ug_m3",
+        "pm25_ug_m3",
+        "pm10_ug_m3",
+        "status"
+    ]
+}

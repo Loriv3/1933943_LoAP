@@ -1,0 +1,20 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "api.actuators",
+    "type": "object",
+    "properties": {
+        "actuators": {
+            "type": "object",
+            "additionalProperties": {
+                "enum": [
+                    "ON",
+                    "OFF"
+                ],
+                "description": "Each actuator's name and state."
+            }
+        }
+    },
+    "required": [
+        "actuators"
+    ]
+}

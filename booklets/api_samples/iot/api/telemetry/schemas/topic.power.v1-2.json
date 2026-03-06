@@ -1,0 +1,9 @@
+{
+    "topic": "mars/telemetry/power_bus",
+    "event_time": "2026-03-06T00:03:18.632039+00:00",
+    "subsystem": "power_bus",
+    "power_kw": 63.17,
+    "voltage_v": 411.2,
+    "current_a": 153.62,
+    "cumulative_kwh": 16342.587
+}

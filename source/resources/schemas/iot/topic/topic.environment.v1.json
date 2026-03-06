@@ -1,0 +1,72 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "topic.environment.v1",
+    "type": "object",
+    "properties": {
+        "topic": {
+            "type": "string",
+            "description": "The topic this data refers to.",
+            "pattern": "^[^\\.]$"
+        },
+        "event_time": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9\\-]+T[0-9:]+\\.[0-9]+(Z|\\+[0-9:]+)?$",
+            "description": "The time at which this event was emitted."
+        },
+        "source": {
+            "type": "object",
+            "description": "This event's source's information.",
+            "properties": {
+                "system": {
+                    "type": "string",
+                    "pattern": "^[^\\.]$"
+                },
+                "segment": {
+                    "type": "string",
+                    "pattern": "^[^\\.]$"
+                }
+            },
+            "required": [
+                "system",
+                "segment"
+            ]
+        },
+        "measurements": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "metric",
+                    "value",
+                    "unit"
+                ]
+            },
+            "minItems": 1
+        },
+        "status": {
+            "enum": [
+                "ok",
+                "warning"
+            ]
+        }
+    },
+    "required": [
+        "topic",
+        "event_time",
+        "source",
+        "measurements",
+        "status"
+    ]
+}

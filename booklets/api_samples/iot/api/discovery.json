@@ -1,0 +1,90 @@
+{
+    "schema_version": "1.2.0",
+    "schema_policy": "fixed",
+    "rest_sensors": [
+        {
+            "sensor_id": "greenhouse_temperature",
+            "path": "/api/sensors/greenhouse_temperature",
+            "schema_id": "rest.scalar.v1"
+        },
+        {
+            "sensor_id": "entrance_humidity",
+            "path": "/api/sensors/entrance_humidity",
+            "schema_id": "rest.scalar.v1"
+        },
+        {
+            "sensor_id": "co2_hall",
+            "path": "/api/sensors/co2_hall",
+            "schema_id": "rest.scalar.v1"
+        },
+        {
+            "sensor_id": "hydroponic_ph",
+            "path": "/api/sensors/hydroponic_ph",
+            "schema_id": "rest.chemistry.v1"
+        },
+        {
+            "sensor_id": "water_tank_level",
+            "path": "/api/sensors/water_tank_level",
+            "schema_id": "rest.level.v1"
+        },
+        {
+            "sensor_id": "corridor_pressure",
+            "path": "/api/sensors/corridor_pressure",
+            "schema_id": "rest.scalar.v1"
+        },
+        {
+            "sensor_id": "air_quality_pm25",
+            "path": "/api/sensors/air_quality_pm25",
+            "schema_id": "rest.particulate.v1"
+        },
+        {
+            "sensor_id": "air_quality_voc",
+            "path": "/api/sensors/air_quality_voc",
+            "schema_id": "rest.chemistry.v1"
+        }
+    ],
+    "pubsub_streams": [
+        {
+            "topic": "mars/telemetry/solar_array",
+            "sse": "/api/telemetry/stream/mars/telemetry/solar_array",
+            "ws": "/api/telemetry/ws?topic=mars/telemetry/solar_array",
+            "schema_id": "topic.power.v1"
+        },
+        {
+            "topic": "mars/telemetry/radiation",
+            "sse": "/api/telemetry/stream/mars/telemetry/radiation",
+            "ws": "/api/telemetry/ws?topic=mars/telemetry/radiation",
+            "schema_id": "topic.environment.v1"
+        },
+        {
+            "topic": "mars/telemetry/life_support",
+            "sse": "/api/telemetry/stream/mars/telemetry/life_support",
+            "ws": "/api/telemetry/ws?topic=mars/telemetry/life_support",
+            "schema_id": "topic.environment.v1"
+        },
+        {
+            "topic": "mars/telemetry/thermal_loop",
+            "sse": "/api/telemetry/stream/mars/telemetry/thermal_loop",
+            "ws": "/api/telemetry/ws?topic=mars/telemetry/thermal_loop",
+            "schema_id": "topic.thermal_loop.v1"
+        },
+        {
+            "topic": "mars/telemetry/power_bus",
+            "sse": "/api/telemetry/stream/mars/telemetry/power_bus",
+            "ws": "/api/telemetry/ws?topic=mars/telemetry/power_bus",
+            "schema_id": "topic.power.v1"
+        },
+        {
+            "topic": "mars/telemetry/power_consumption",
+            "sse": "/api/telemetry/stream/mars/telemetry/power_consumption",
+            "ws": "/api/telemetry/ws?topic=mars/telemetry/power_consumption",
+            "schema_id": "topic.power.v1"
+        },
+        {
+            "topic": "mars/telemetry/airlock",
+            "sse": "/api/telemetry/stream/mars/telemetry/airlock",
+            "ws": "/api/telemetry/ws?topic=mars/telemetry/airlock",
+            "schema_id": "topic.airlock.v1"
+        }
+    ]
+}

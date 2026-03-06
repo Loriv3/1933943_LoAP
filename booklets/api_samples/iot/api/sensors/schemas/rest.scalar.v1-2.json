@@ -1,0 +1,8 @@
+{
+    "sensor_id": "entrance_humidity",
+    "captured_at": "2026-03-06T00:06:37.343887+00:00",
+    "metric": "humidity_pct",
+    "value": 37.76,
+    "unit": "%",
+    "status": "ok"
+}

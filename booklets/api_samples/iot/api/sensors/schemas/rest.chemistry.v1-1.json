@@ -1,0 +1,12 @@
+{
+    "sensor_id": "hydroponic_ph",
+    "captured_at": "2026-03-06T00:07:14.711937+00:00",
+    "measurements": [
+        {
+            "metric": "ph",
+            "value": 6.36,
+            "unit": "pH"
+        }
+    ],
+    "status": "ok"
+}

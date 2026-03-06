@@ -1,0 +1,8 @@
+{
+    "topic": "mars/telemetry/thermal_loop",
+    "event_time": "2026-03-06T00:02:43.601134+00:00",
+    "loop": "primary",
+    "temperature_c": 51.49,
+    "flow_l_min": 119.11,
+    "status": "ok"
+}

@@ -1,0 +1,12 @@
+{
+    "sensors": [
+        "greenhouse_temperature",
+        "entrance_humidity",
+        "co2_hall",
+        "hydroponic_ph",
+        "water_tank_level",
+        "corridor_pressure",
+        "air_quality_pm25",
+        "air_quality_voc"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "topic": "mars/telemetry/power_consumption",
+    "event_time": "2026-03-06T00:03:28.637899+00:00",
+    "subsystem": "power_consumption",
+    "power_kw": 114.74,
+    "voltage_v": 396.6,
+    "current_a": 289.31,
+    "cumulative_kwh": 12495.123
+}

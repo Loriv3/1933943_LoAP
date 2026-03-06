@@ -1,0 +1,8 @@
+{
+    "sensor_id": "air_quality_pm25",
+    "captured_at": "2026-03-06T00:20:12.313354+00:00",
+    "pm1_ug_m3": 31.73,
+    "pm25_ug_m3": 35.86,
+    "pm10_ug_m3": 44.28,
+    "status": "warning"
+}

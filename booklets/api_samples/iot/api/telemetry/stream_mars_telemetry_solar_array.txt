@@ -1,0 +1,30 @@
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:12.993149+00:00", "subsystem": "solar_array", "power_kw": 121.27, "voltage_v": 390.0, "current_a": 310.95, "cumulative_kwh": 8434.241}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:17.997622+00:00", "subsystem": "solar_array", "power_kw": 117.29, "voltage_v": 405.8, "current_a": 289.03, "cumulative_kwh": 8434.403}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:23.005497+00:00", "subsystem": "solar_array", "power_kw": 113.42, "voltage_v": 388.0, "current_a": 292.32, "cumulative_kwh": 8434.561}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:28.011291+00:00", "subsystem": "solar_array", "power_kw": 109.76, "voltage_v": 403.5, "current_a": 272.02, "cumulative_kwh": 8434.713}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:33.014440+00:00", "subsystem": "solar_array", "power_kw": 106.35, "voltage_v": 382.4, "current_a": 278.11, "cumulative_kwh": 8434.861}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:38.018821+00:00", "subsystem": "solar_array", "power_kw": 105.79, "voltage_v": 403.8, "current_a": 261.99, "cumulative_kwh": 8435.008}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:43.020885+00:00", "subsystem": "solar_array", "power_kw": 105.12, "voltage_v": 382.9, "current_a": 274.54, "cumulative_kwh": 8435.154}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:48.025221+00:00", "subsystem": "solar_array", "power_kw": 104.1, "voltage_v": 383.9, "current_a": 271.16, "cumulative_kwh": 8435.299}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:53.030701+00:00", "subsystem": "solar_array", "power_kw": 107.85, "voltage_v": 398.0, "current_a": 270.98, "cumulative_kwh": 8435.448}
+
+event: telemetry
+data: {"topic": "mars/telemetry/solar_array", "event_time": "2026-03-05T23:51:58.035796+00:00", "subsystem": "solar_array", "power_kw": 105.66, "voltage_v": 392.9, "current_a": 268.92, "cumulative_kwh": 8435.595}
+

@@ -1,0 +1,16 @@
+{
+    "topic": "mars/telemetry/radiation",
+    "event_time": "2026-03-06T00:00:03.469786+00:00",
+    "source": {
+        "system": "radiation-monitor",
+        "segment": "habitat-alpha"
+    },
+    "measurements": [
+        {
+            "metric": "radiation_uSv_h",
+            "value": 0.21,
+            "unit": "uSv/h"
+        }
+    ],
+    "status": "ok"
+}

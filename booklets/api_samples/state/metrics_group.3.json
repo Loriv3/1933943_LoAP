@@ -1,0 +1,16 @@
+{
+    "group_id": "radiation.radiation-monitor.habitat-alpha",
+    "at": "2026-03-06T01:53:34.247Z",
+    "metrics": [
+        {
+            "metric": "radiation",
+            "value": [
+                {
+                    "value": 0.00000021,
+                    "unit": "Sv/h"
+                }
+            ]
+        }
+    ],
+    "status": "ok"
+}

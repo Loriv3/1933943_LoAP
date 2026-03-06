@@ -1,0 +1,24 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Actuator State",
+    "type": "object",
+    "properties": {
+        "actuator_id": {
+            "type": "string"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9\\-]+T[0-9:]+\\.[0-9]+(Z|\\+[0-9:]+)?$",
+            "description": "The time at which this actuator was last updated."
+        },
+        "is_on": {
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "actuator_id",
+        "updated_at",
+        "is_on"
+    ]
+}

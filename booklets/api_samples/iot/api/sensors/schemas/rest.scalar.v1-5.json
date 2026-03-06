@@ -1,0 +1,8 @@
+{
+    "sensor_id": "corridor_pressure",
+    "captured_at": "2026-03-06T00:16:28.344563+00:00",
+    "metric": "pressure_kpa",
+    "value": 104.19,
+    "unit": "kPa",
+    "status": "warning"
+}

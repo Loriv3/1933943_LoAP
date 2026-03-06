@@ -1,0 +1,9 @@
+{
+    "topic": "mars/telemetry/solar_array",
+    "event_time": "2026-03-05T23:51:12.993149+00:00",
+    "subsystem": "solar_array",
+    "power_kw": 121.27,
+    "voltage_v": 390.0,
+    "current_a": 310.95,
+    "cumulative_kwh": 8434.241
+}

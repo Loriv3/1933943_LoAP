@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "rest.chemistry.v1",
+    "type": "object",
+    "properties": {
+        "sensor_id": {
+            "type": "string",
+            "description": "The sensor this data refers to.",
+            "pattern": "^[^\\.]$"
+        },
+        "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9\\-]+T[0-9:]+\\.[0-9]+(Z|\\+[0-9:]+)?$",
+            "description": "The time at which this measurement was captured."
+        },
+        "measurements": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "metric": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "metric",
+                    "value",
+                    "unit"
+                ]
+            },
+            "minItems": 1
+        },
+        "status": {
+            "enum": [
+                "ok",
+                "warning"
+            ]
+        }
+    },
+    "required": [
+        "sensor_id",
+        "captured_at",
+        "measurements",
+        "status"
+    ]
+}
