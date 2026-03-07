@@ -29,6 +29,7 @@ services:
       ARTEMIS_PORT: 61616
       ARTEMIS_USER: admin
       ARTEMIS_PASSWORD: admin
+      SIMULATOR_URL: http://simulator:8080
     depends_on:
       - activemq
       - simulator

@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, List, Union, Literal
 import logging
+import httpx
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,6 +24,8 @@ BROKER_USER = os.getenv("ARTEMIS_USER", "admin")
 BROKER_PASS = os.getenv("ARTEMIS_PASSWORD", "admin")
 BROKER_URL = f"amqp://{BROKER_HOST}:{BROKER_PORT}"
 ADDRESS = "sensor.events"
+SIMULATOR_URL = os.getenv("SIMULATOR_URL", "http://simulator:8080")
+
 
 # ---  DEFINIZIONE DEI MODELLI  ---
 class MetricValue(BaseModel):
@@ -152,3 +155,35 @@ async def get_device_state(device_id: str):
 async def stream_updates():
     """Endpoint Dummy per Server-Sent Events (SSE)."""
     return {"message": "Qui ci sarà lo stream SSE connesso ad ActiveMQ"}
+
+class CommandRequest(BaseModel):
+    state: Literal["ON", "OFF"]
+
+@app.post("/api/actuators/{actuator_id}/control", tags=["Control"])
+async def control_actuator(actuator_id: str, command: CommandRequest):
+    """ Invia un comando al simulatore di Marte """
+
+    target_url = f"{SIMULATOR_URL}/api/actuators/{actuator_id}"
+    payload = {"state": command.state}
+
+    logger.info(f"📤 Invio comando a {actuator_id}: {command.state}")
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(target_url, json=payload, timeout=5.0)
+
+            if response.status_code == 200:
+                logger.info(f"✅ Simulatore ha accettato il comando per {actuator_id}")
+                return {
+                    "status": "success",
+                    "actuator": actuator_id,
+                    "target_state": command.state,
+                    "simulator_response": response.json()
+                }
+            else:
+                logger.error(f"❌ Errore simulatore: {response.status_code}")
+                return {"status": "error", "message": f"Simulator returned {response.status_code}"}
+
+        except httpx.RequestError as exc:
+            logger.error(f"❌ Errore di rete verso il simulatore: {exc}")
+            return {"status": "error", "message": "Simulator unreachable"}
