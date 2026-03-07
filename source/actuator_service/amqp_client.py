@@ -28,15 +28,26 @@ class AMQPConsumer(MessagingHandler):
         logger.info(f"📥 [AMQP] Messaggio ricevuto: {event.message.body}")
 
         try:
-            data = json.loads(event.message.body)
+            raw_body = event.message.body
+            # Conversione di sicurezza
+            if isinstance(raw_body, memoryview):
+                body_str = raw_body.tobytes().decode('utf-8')
+            elif isinstance(raw_body, bytes):
+                body_str = raw_body.decode('utf-8')
+            else:
+                body_str = str(raw_body)
+
+            logger.info(f"📥 [AMQP] Messaggio ricevuto: {body_str}")
+            data = json.loads(body_str)  # Ora riceve una stringa valida
             device_id = data.get("group_id") or data.get("actuator_id")
+            # Salvataggio su Redis
             r.set(device_id, json.dumps(data))
             logger.info(f"💾 Stato salvato su Redis per: {device_id}")
-            if data.get("type") == "metric":
+            if "metrics" in data:
                 obj = MetricEvent(**data)
                 in_memory_cache[obj.group_id] = obj
                 logger.info(f"💾 Metrica salvata nella cache locale per: {obj.group_id}")  # LOG DI CONFERMA
-            elif data.get("type") == "actuator":
+            elif "actuator_id" in data:
                 obj = ActuatorEvent(**data)
                 in_memory_cache[obj.actuator_id] = obj
                 logger.info(f"💾 Stato attuatore salvato nella cache locale: {obj.actuator_id}")  # LOG DI CONFERMA
