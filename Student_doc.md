@@ -28,53 +28,164 @@ MarsOps is a distributed automation platform designed to guarantee the survival 
 
 # CONTAINERS:
 
-## CONTAINER_NAME: <name of the container>
-
-### DESCRIPTION: 
-<description of the container>
-
-### USER STORIES:
-<list of user stories satisfied>
-
-### PORTS: 
-<used ports>
+## CONTAINER_NAME: activemq
 
 ### DESCRIPTION:
-<description of the container>
+ActiveMQ Artemis broker used as messaging backbone between telemetry ingestion and automation services.
+
+### USER STORIES:
+2, 3, 4, 7, 15
+
+### PORTS:
+- `61616` (JMS broker)
+- `8161` (web console)
 
 ### PERSISTENCE EVALUATION
-<description on the persistence of data>
+Configured as non-persistent broker for this laboratory setup (`persistence-enabled=false` in `broker.xml`).
 
 ### EXTERNAL SERVICES CONNECTIONS
-<description on the connections to external services>
+- Receives events on topic `sensor.events`.
+- Exposes queue `actuator.commands` for actuator commands.
+- Docker service name: `activemq`.
+
+
+## CONTAINER_NAME: automation-rules
+
+### DESCRIPTION:
+Spring Boot backend service that stores automation rules, consumes telemetry events from broker, evaluates conditions, and publishes actuator commands.
+
+### USER STORIES:
+6, 7, 8, 9, 10, 15, 17, 19, 20
+
+### PORTS:
+- `8082` on host mapped to `8080` in container.
+
+### PERSISTENCE EVALUATION
+SQLite database persisted on Docker volume:
+- DB path in container: `/data/rules.db`
+- volume: `automation_rules_data`
+- persists `rules` and `rule_firings` across restarts.
+
+### EXTERNAL SERVICES CONNECTIONS
+- Connects to Artemis broker with:
+	- URL: `tcp://activemq:61616`
+	- user/password: `admin/admin`
+- Consumes from `sensor.events` as topic (pub/sub).
+- Produces to `actuator.commands` as queue (p2p).
 
 ### MICROSERVICES:
 
-#### MICROSERVICE: <name of the microservice>
+#### MICROSERVICE: automation-rules
 - TYPE: backend
-- DESCRIPTION: <description of the microservice>
-- PORTS: <ports to be published by the microservice>
+- DESCRIPTION: rule management and real-time automation engine.
+- PORTS: `8080` (internal container), published as `8082`.
 - TECHNOLOGICAL SPECIFICATION:
-<description of the technological aspect of the microservice>
-- SERVICE ARCHITECTURE: 
-<description of the architecture of the microservice>
+	- Java 21, Spring Boot 3.3.2
+	- Spring Web, Spring JDBC, Spring Artemis JMS
+	- SQLite (`org.xerial:sqlite-jdbc`)
+	- Maven multi-stage Docker build
+- SERVICE ARCHITECTURE:
+	- Controller layer for REST APIs
+	- Repository layer for SQLite persistence
+	- JMS listener for telemetry ingestion
+	- Rule engine service for condition evaluation and command production
+	- In-memory anti-spam cache per actuator (`ConcurrentHashMap`)
 
-- ENDPOINTS: <put this bullet point only in the case of backend and fill the following table>
-		
-	| HTTP METHOD | URL | Description | User Stories |
-	| ----------- | --- | ----------- | ------------ |
-    | ... | ... | ... | ... |
+- ENDPOINTS:
 
-- PAGES: <put this bullet point only in the case of frontend and fill the following table>
+| HTTP METHOD | URL | Description | User Stories |
+| ----------- | --- | ----------- | ------------ |
+| GET | `/health` | Service health with broker connectivity flag (`brokerConnected`) | 15 |
+| GET | `/api/health` | Alias of `/health` | 15 |
+| GET | `/api/rules` | List all rules | 9 |
+| POST | `/api/rules` | Create rule | 6, 14 |
+| PUT | `/api/rules/{id}` | Replace existing rule (404 if not found) | 6, 9 |
+| PATCH | `/api/rules/{id}/enabled` | Enable/disable rule | 9 |
+| DELETE | `/api/rules/{id}` | Delete rule | 10, 14 |
+| GET | `/api/rule-firings?limit=50` | List recent rule firing records | 7, 9 |
+| GET | `/api/metrics/mapping` | Returns dynamic mapping of `group_id` + `metric_id` to display names for frontend | 11, 16 |
 
-	| Name | Description | Related Microservice | User Stories |
-	| ---- | ----------- | -------------------- | ------------ |
-	| ... | ... | ... | ... |
+- MESSAGE CONTRACTS:
 
-- DB STRUCTURE: <put this bullet point only in the case a DB is used in the microservice and specify the structure of the tables and columns>
+1. Accepted telemetry payloads on topic `sensor.events`:
+	 - Legacy single event format:
+		 ```json
+		 {
+			 "event_time": "2026-03-06T14:00:00Z",
+			 "kind": "sensor",
+			 "sensor_name": "greenhouse_temperature.value",
+			 "value": 29.0,
+			 "unit": "C",
+			 "status": "ok"
+		 }
+		 ```
+	 - Grouped metrics format:
+		 ```json
+		 {
+			 "group_id": "air_quality",
+			 "updated_at": "2026-03-06T01:53:34.247Z",
+			 "metrics": [
+				 {
+					 "metric_id": "voc",
+					 "type": "air_quality.particle_volume_concentration",
+					 "value": [{"value": 0.60448, "unit": "ppm"}]
+				 }
+			 ],
+			 "status": "warning"
+		 }
+		 ```
+		 Internally transformed to sensor names like `air_quality.voc`.
 
-	**_<name of the table>_** :	| **_id_** | <other columns>
+2. Produced command payload on queue `actuator.commands`:
+	 ```json
+	 {
+		 "issued_at": "2026-03-06T14:00:03Z",
+		 "updated_at": "2026-03-06T14:00:03Z",
+		 "actuator_name": "cooling_fan",
+		 "actuator_id": "cooling_fan",
+		 "state": "ON",
+		 "is_on": true,
+		 "rule_id": "6d5d2a0d-3c5a-4c1a-9bb4-7bf3fcd5a233",
+		 "reason": {
+			 "sensor_name": "greenhouse_temperature.value",
+			 "value": 29.0,
+			 "operator": ">",
+			 "threshold": 28.0
+		 }
+	 }
+	 ```
 
-#### <other microservices>
+- RULE ENGINE POLICIES:
+	- Valid operators: `<`, `<=`, `=`, `>`, `>=`.
+	- Valid target state: `ON` or `OFF`.
+	- Event accepted if:
+		- `sensor_name` exists
+		- `value` is numeric
+		- `kind` is `sensor` (case-insensitive) or missing
+	- Unit compatibility:
+		- if rule unit is defined, event unit must match.
+	- Anti-spam:
+		- same actuator + same state is not sent repeatedly.
+		- cache resets on service restart.
 
-## <other containers>
+- DB STRUCTURE:
+
+	**_rules_**:
+	| **id** | enabled | sensor_name | operator | threshold_value | unit | actuator_name | target_state | created_at | updated_at |
+	| ------ | ------- | ----------- | -------- | --------------- | ---- | ------------- | ------------ | ---------- | ---------- |
+
+	**_rule_firings_**:
+	| **id** | rule_id | fired_at | sensor_name | sensor_value | actuator_name | target_state |
+	| ------ | ------- | -------- | ----------- | ------------ | ------------- | ------------ |
+
+
+## IMPLEMENTATION AND TEST SUMMARY
+
+- Implemented service build/run with Docker Compose (`activemq` + `automation-rules`).
+- Verified REST CRUD for rules (including `PATCH enabled` and `DELETE` with `204`).
+- Verified end-to-end trigger: event on topic => command on queue.
+- Verified anti-spam behavior (duplicate event does not increase queue repeatedly).
+- Verified persistence across restart (`rules` preserved in `/data/rules.db`).
+- Verified negative tests:
+	- unit mismatch (`C` rule vs `F` event) does not trigger command.
+	- value below threshold does not trigger command.

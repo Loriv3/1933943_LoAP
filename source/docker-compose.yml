@@ -4,6 +4,7 @@ services:
     container_name: simulator
     ports:
       - "8080:8080"
+
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -14,6 +15,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
   activemq:
     build: ./amq_service
     container_name: activemq
@@ -29,6 +31,7 @@ services:
     environment:
       ARTEMIS_USER: admin
       ARTEMIS_PASSWORD: admin
+
   actuator_service:
     build: ./actuator_service
     container_name: actuator_service
@@ -42,11 +45,12 @@ services:
       SIMULATOR_URL: http://simulator:8080
     depends_on:
       activemq:
-          condition: service_healthy
+        condition: service_healthy
       simulator:
         condition: service_started
       redis:
         condition: service_healthy
+
   converter:
     build: ./converter_service
     container_name: converter
@@ -58,3 +62,19 @@ services:
       AMQ_PORT: 61616
       BACKEND_URL: http://simulator:8080
       LOG_LEVEL: INFO
+
+  automation-rules:
+    build:
+      context: .
+      dockerfile: automation-rules/Dockerfile
+    container_name: automation-rules
+    depends_on:
+      activemq:
+        condition: service_healthy
+    volumes:
+      - automation_rules_data:/data
+    ports:
+      - "8082:8080"
+
+volumes:
+  automation_rules_data:
