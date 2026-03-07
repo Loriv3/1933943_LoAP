@@ -25,8 +25,24 @@ public class StateEventListener {
 
     @JmsListener(destination = "${app.jms.topicState}", containerFactory = "topicListenerFactory")
     public void onStateEvent(String payload) {
+        if (payload == null || payload.isBlank()) {
+            LOGGER.debug("Ignoring empty StateEvent payload");
+            return;
+        }
+
+        String trimmedPayload = payload.trim();
+        if (!trimmedPayload.startsWith("{")) {
+            LOGGER.debug("Ignoring non-JSON StateEvent payload: {}", abbreviate(trimmedPayload));
+            return;
+        }
+
         try {
-            JsonNode root = objectMapper.readTree(payload);
+            JsonNode root = objectMapper.readTree(trimmedPayload);
+            if (!root.isObject()) {
+                LOGGER.debug("Ignoring JSON payload that is not an object: {}", abbreviate(trimmedPayload));
+                return;
+            }
+
             if (root.has("group_id") && root.has("metrics") && root.get("metrics").isArray()) {
                 processGroupedMetricsEvent(root);
                 return;
@@ -35,7 +51,7 @@ public class StateEventListener {
             StateEvent stateEvent = objectMapper.treeToValue(root, StateEvent.class);
             ruleEngineService.processStateEvent(stateEvent);
         } catch (JsonProcessingException exception) {
-            LOGGER.warn("Ignoring malformed StateEvent payload: {}", payload, exception);
+            LOGGER.warn("Ignoring malformed StateEvent payload: {}", abbreviate(trimmedPayload));
         }
     }
 
@@ -79,5 +95,13 @@ public class StateEventListener {
             return null;
         }
         return node.asText();
+    }
+
+    private String abbreviate(String payload) {
+        int maxLen = 160;
+        if (payload.length() <= maxLen) {
+            return payload;
+        }
+        return payload.substring(0, maxLen) + "...";
     }
 }
