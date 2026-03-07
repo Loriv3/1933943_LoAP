@@ -1,25 +1,26 @@
 <?xml version='1.0'?>
 <configuration xmlns="urn:activemq"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
    <core xmlns="urn:activemq:core">
 
+      <name>mars-broker</name>
+
+      <security-enabled>false</security-enabled>
       <persistence-enabled>false</persistence-enabled>
       <journal-type>NIO</journal-type>
 
       <acceptors>
-         <acceptor name="artemis">tcp://0.0.0.0:61616?protocols=AMQP,CORE,MQTT,STOMP</acceptor>
+         <acceptor name="artemis">
+            tcp://0.0.0.0:61616?protocols=AMQP,CORE,MQTT,STOMP
+         </acceptor>
       </acceptors>
 
-      <security-enabled>false</security-enabled>
-
       <addresses>
-         <address name="sensor.events">
-            <multicast>
-               <queue name="sensor.events"/>
-            </multicast>
-         </address>
+
+      <address name="sensor.events">
+         <multicast/>
+      </address>
 
          <address name="actuator.states">
             <multicast>
@@ -32,7 +33,9 @@
                <queue name="actuator.commands"/>
             </anycast>
          </address>
+
       </addresses>
 
    </core>
+
 </configuration>
