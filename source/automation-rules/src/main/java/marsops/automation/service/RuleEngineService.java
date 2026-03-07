@@ -42,10 +42,20 @@ public class RuleEngineService {
 
     public void processStateEvent(StateEvent event) {
         if (!isValidForRuleEngine(event)) {
+            LOGGER.debug("Ignoring invalid StateEvent payload");
             return;
         }
 
         List<Rule> rules = ruleRepository.findEnabledBySensorName(event.getSensorName());
+        if (rules.isEmpty()) {
+            LOGGER.info("Event processed sensor={} value={} unit={} enabledRules=0 firedCommands=0",
+                event.getSensorName(),
+                event.getValue(),
+                event.getUnit());
+            return;
+        }
+
+        int firedCommands = 0;
         for (Rule rule : rules) {
             if (!isUnitCompatible(rule, event)) {
                 continue;
@@ -79,12 +89,20 @@ public class RuleEngineService {
             jmsTemplate.convertAndSend(queueCommands, command);
             actuatorStateCache.put(rule.getActuatorName(), targetState);
             firingRepository.save(rule, event);
+            firedCommands++;
             LOGGER.info("Command sent to queue={} actuator={} state={} ruleId={}",
                 queueCommands,
                 rule.getActuatorName(),
                 targetState,
                 rule.getId());
         }
+
+        LOGGER.info("Event processed sensor={} value={} unit={} enabledRules={} firedCommands={}",
+            event.getSensorName(),
+            event.getValue(),
+            event.getUnit(),
+            rules.size(),
+            firedCommands);
     }
 
     private boolean isValidForRuleEngine(StateEvent event) {
