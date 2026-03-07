@@ -1,0 +1,69 @@
+.thermometer {
+    position: relative;
+    width: 1em;
+    height: 4em;
+}
+
+.thermometer-bulb {
+    position: absolute;
+    bottom: 0;
+    width: 1em;
+    height: 1em;
+    border-radius: .5em;
+    box-sizing: border-box;
+    background-color: #505050;
+}
+
+.thermometer-bulb-fill {
+    position: absolute;
+    left: .075em;
+    bottom: .075em;
+    width: .85em;
+    height: .85em;
+    border-radius: .5em;
+    box-sizing: border-box;
+    background-color: var(--cold-color);
+}
+
+.thermometer-tube {
+    position: absolute;
+    top: 0;
+    left: .2em;
+    width: .6em;
+    height: 4em;
+    border-radius: .5em;
+    background-color: #505050;
+}
+
+.thermometer-tube-fill {
+    position: absolute;
+    bottom: .475em;
+    left: .275em;
+    width: .45em;
+    height: 3.45em;
+    border-top-left-radius: .5em;
+    border-top-right-radius: .5em;
+    background: #707070;
+    overflow: hidden;
+}
+
+.thermometer-tube-fill-inner {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: .45em;
+    height: calc(.525em + 2.925em * var(--value));
+    background: linear-gradient(var(--hot-color) 30%, var(--cold-color) 84.78%);
+    background-position: left bottom 3.45em;
+    background-size: .45em 3.45em;
+    transition: height 0.1s ease-in-out;
+}
+
+.thermometer-notch {
+    position: absolute;
+    bottom: calc(.525em - .03em / 2 + 2.925em * var(--value));
+    right: 0;
+    height: .03em;
+    width: .2em;
+    background-color: #00000080;
+}

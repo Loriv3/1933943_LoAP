@@ -1,0 +1,27 @@
+.ph-scale {
+    position: relative;
+    width: 1em;
+    height: 4em;
+    border: .075em solid #505050;
+    border-radius: .1em;
+    overflow: hidden;
+}
+
+.ph-scale-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(100% * var(--value) / 14);
+    overflow: hidden;
+    transition: height 0.1s ease-in-out;
+}
+
+.ph-scale-fill-part {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(3.85em * var(--value) / 14);
+    height: calc(3.85em / 14);
+    background-color: color-mix(in srgb, var(--color) 80%, #808080);
+}

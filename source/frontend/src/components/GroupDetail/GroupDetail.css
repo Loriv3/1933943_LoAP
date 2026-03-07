@@ -1,0 +1,16 @@
+.group-detail {
+    min-height: 100%;
+    transition: background-color .1s linear;
+}
+
+.group-detail-status-icon {
+    font-size: 3em;
+}
+
+.group-detail-status-warning {
+    color: var(--bs-warning);
+}
+
+.group-detail-status-ok {
+    color: var(--bs-success);
+}

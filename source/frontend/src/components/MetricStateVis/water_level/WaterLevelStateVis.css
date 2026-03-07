@@ -1,0 +1,71 @@
+.water-level {
+    position: relative;
+    width: 2em;
+    height: 4em;
+    border: .075em solid #5050a0;
+    border-radius: .1em;
+    overflow: hidden;
+}
+
+.water-level-fill {
+    position: relative;
+    bottom: calc((var(--value)) * 3.6em);
+    transition: bottom .1s ease-in-out;
+}
+
+.water-level-wave-0 {
+    fill: #2d55aa;
+    offset-path: path("M 0 0 q -.175 .0625 -.35 0 t -.35 0 -.35 0 -.35 0");
+    offset-rotate: 0deg;
+    animation: move 18s infinite linear;
+    transform: scaleX(1.4);
+}
+
+.water-level-wave-1 {
+    fill: #3461c1f8;
+    offset-path: path("M -2.5 0 q .2 .08 .4 0 t .4 0 .4 0 .4 0 .4 0 .4 0");
+    offset-rotate: 0deg;
+    animation: move 10s infinite linear;
+    animation-delay: 4s;
+    transform: scaleX(1.2);
+}
+
+.water-level-wave-2 {
+    fill: url(#front);
+    offset-path: path("M 0 0 q -.25 .125 -.5 0 t -.5 0");
+    offset-rotate: 0deg;
+    animation: move 6s infinite linear;
+    animation-delay: 1s;
+}
+
+@keyframes move {
+    0% {
+        offset-distance: 0%;
+    }
+    100% {
+        offset-distance: 100%;
+    }
+}
+
+.water-level-value {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    bottom: calc(0.2em + (100% - 3em) * var(--value));
+    font-size: 0.45em;
+    line-height: 1em;
+    transition: bottom 0.1s ease-in-out;
+}
+
+.water-level-value-percent {
+    color: #ffffff;
+    text-shadow: 0 0 8px #404040ff;
+}
+
+.water-level-value-liters {
+    font-size: 0.7em;
+    line-height: 1em;
+    color: #ffffffc0;
+    text-shadow: 0 0 8px #404040ff;
+}

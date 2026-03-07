@@ -1,0 +1,69 @@
+.speedometer {
+    width: 1em;
+    height: .5em;
+    position: relative;
+}
+
+.speedometer-groove {
+    width: 1em;
+    height: .5em;
+    border-top-left-radius: .5em;
+    border-top-right-radius: .5em;
+    border: .15em solid var(--track-color);
+    border-bottom: none;
+}
+
+.speedometer-score-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+}
+
+.speedometer-score {
+    position: absolute;
+    left: .02em;
+    top: .02em;
+    transform: rotate(calc(-45deg + var(--value) * 180deg));
+    height: .96em;
+    width: .96em;
+    background: transparent;
+    border-radius: 50%;
+    border: .11em solid var(--color);
+    border-color: transparent transparent var(--color) var(--color);
+    transition: transform .1s ease-in-out;
+}
+
+.speedometer-notch {
+    position: absolute;
+    left: -.015em;
+    top: .4875em;
+    width: .18em;
+    height: .025em;
+    transform-origin: .515em .0125em;
+    transform: rotate(calc(var(--value) * 180deg));
+    background-color: #c0c0c0;
+    transition: transform .1s ease-in-out;
+}
+
+.speedometer-value {
+    position: absolute;
+    bottom: -0.5em;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.1em;
+    line-height: 1em;
+}
+
+.speedometer-value-value {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.speedometer-value-unit {
+    font-size: 0.8em;
+    opacity: 0.5;
+}
