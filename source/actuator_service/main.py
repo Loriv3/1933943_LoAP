@@ -2,8 +2,8 @@ import os
 import threading
 import logging
 import asyncio
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
 from contextlib import asynccontextmanager
 # Importiamo solo quello che serve veramente
 from amqp_client import start_amqp_thread
