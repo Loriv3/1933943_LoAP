@@ -105,6 +105,16 @@ public class RuleEngineService {
             firedCommands);
     }
 
+    public void applyActuatorStateUpdate(String actuatorName, TargetState targetState, String sourceQueue) {
+        if (actuatorName == null || actuatorName.isBlank() || targetState == null) {
+            LOGGER.debug("Ignoring invalid actuator state update actuator={} state={} source={}", actuatorName, targetState, sourceQueue);
+            return;
+        }
+
+        actuatorStateCache.put(actuatorName, targetState);
+        LOGGER.info("Actuator state update consumed source={} actuator={} state={}", sourceQueue, actuatorName, targetState);
+    }
+
     private boolean isValidForRuleEngine(StateEvent event) {
         if (event == null || event.getSensorName() == null || event.getSensorName().isBlank() || event.getValue() == null) {
             return false;

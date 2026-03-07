@@ -20,6 +20,7 @@ app:
   jms:
     topicState: sensor.events
     queueCommands: actuator.commands
+    queueActuatorStates: actuator.commands
     topicRuleFired: marsops.rules.fired
 
 logging:
