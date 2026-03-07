@@ -8,8 +8,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, List, Union, Literal
+import logging
 
-# --- 1. CONFIGURAZIONE ACTIVEMQ ---
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
+)
+
+logger = logging.getLogger("actuator-service")
+# ---  CONFIGURAZIONE ACTIVEMQ ---
 BROKER_HOST = os.getenv("ARTEMIS_HOST", "127.0.0.1")
 BROKER_PORT = int(os.getenv("ARTEMIS_PORT", 61616))
 BROKER_USER = os.getenv("ARTEMIS_USER", "admin")
@@ -17,7 +24,7 @@ BROKER_PASS = os.getenv("ARTEMIS_PASSWORD", "admin")
 BROKER_URL = f"amqp://{BROKER_HOST}:{BROKER_PORT}"
 ADDRESS = "sensor.events"
 
-# --- 2. DEFINIZIONE DEI MODELLI (Nuovo schema) ---
+# ---  DEFINIZIONE DEI MODELLI  ---
 class MetricValue(BaseModel):
     value: float
     unit: str
@@ -47,7 +54,7 @@ class ActuatorEvent(BaseModel):
 # Pydantic capirà in automatico quale modello usare grazie al campo 'type'
 AnyDeviceEvent = Union[MetricEvent, ActuatorEvent]
 
-# --- 3. CACHE IN MEMORIA ---
+# --- 3. CACHE IN MEMORIA TODO ---
 in_memory_cache: Dict[str, AnyDeviceEvent] = {}
 
 class AMQPConsumer(MessagingHandler):
@@ -64,16 +71,16 @@ class AMQPConsumer(MessagingHandler):
             source="sensor.events"
         )
 
-        print("📡 Receiver creato su sensor.events")
+        logger.info("📡 Receiver creato su sensor.events")
 
     def on_connection_opened(self, event):
-        print("🔗 Connessione AMQP aperta")
+        logger.info("🔗 Connessione AMQP aperta")
 
     def on_link_opened(self, event):
-        print("🔗 Link AMQP aperto")
+        logger.info("🔗 Link AMQP aperto")
 
     def on_message(self, event):
-        print("📥 [AMQP] Messaggio ricevuto")
+        logger.info("📥 [AMQP] Messaggio ricevuto")
 
         try:
             data = json.loads(event.message.body)
@@ -81,23 +88,24 @@ class AMQPConsumer(MessagingHandler):
             if data.get("type") == "metric":
                 evento = MetricEvent(**data)
                 in_memory_cache[evento.group_id] = evento
-                print(f"💾 Salvata metrica {evento.group_id}")
+                logger.info(f"💾 Salvata metrica {evento.group_id}")
 
             elif data.get("type") == "actuator":
                 evento = ActuatorEvent(**data)
                 in_memory_cache[evento.actuator_id] = evento
-                print(f"💾 Salvato attuatore {evento.actuator_id}")
+                logger.info(f"💾 Salvato attuatore {evento.actuator_id}")
 
         except Exception as e:
-            print("❌ Errore parsing:", e)
+            logger.info("❌ Errore parsing:", e)
 
 def start_amqp_consumer():
     while True:
         try:
-            print("🔄 Tentativo connessione AMQP...")
+            logger.info("🔄 Tentativo connessione AMQP...")
             Container(AMQPConsumer()).run()
         except Exception as e:
-            print("❌ Connessione fallita:", e)
+            logger.info("❌ Connessione fallita:", e)
+            logger.warning("Connessione AMQP persa, retry tra 5 secondi...")
             time.sleep(5)
 
 # --- 5. LIFESPAN: COSA FARE ALL'AVVIO E ALLO SPEGNIMENTO ---
