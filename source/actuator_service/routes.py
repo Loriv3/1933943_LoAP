@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 import httpx
 import redis
 import os
@@ -6,11 +6,15 @@ import json
 import logging
 from models import CommandRequest, AnyDeviceEvent
 from amqp_client import in_memory_cache
+from notifier import manager
 
 router = APIRouter()
 logger = logging.getLogger("actuator-service")
 SIMULATOR_URL = os.getenv("SIMULATOR_URL", "http://simulator:8080")
 r = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
+
+
+
 @router.get("/api/state")
 async def get_all_states():
     keys = r.keys("*")
@@ -42,3 +46,13 @@ async def get_device_state(device_id: str):
     if not state:
         raise HTTPException(status_code=404, detail="Dispositivo non trovato in cache")
     return json.loads(state)
+
+@router.websocket("/ws/updates")
+async def websocket_updates(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Resta in attesa (serve per gestire la disconnessione)
+            await websocket.receive_text()
+    except Exception:
+        manager.disconnect(websocket)

@@ -6,15 +6,17 @@ from proton.handlers import MessagingHandler
 from proton.reactor import Container
 from models import MetricEvent, ActuatorEvent
 logger = logging.getLogger("actuator-service")
-
+import asyncio
+from notifier import manager
 # Cache globale condivisa tra i moduli
 in_memory_cache = {}
 r = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 class AMQPConsumer(MessagingHandler):
-    def __init__(self, broker_url, address):
+    def __init__(self, broker_url, address, loop):
         super().__init__()
         self.broker_url = broker_url
         self.address = address
+        self.loop = loop  # Il loop di FastAPI
 
     def on_start(self, event):
         conn = event.container.connect(self.broker_url)
@@ -38,14 +40,20 @@ class AMQPConsumer(MessagingHandler):
                 obj = ActuatorEvent(**data)
                 in_memory_cache[obj.actuator_id] = obj
                 logger.info(f"💾 Stato attuatore salvato nella cache locale: {obj.actuator_id}")  # LOG DI CONFERMA
+            # PONTE VERSO WEBSOCKET:
+            # Spediamo il messaggio al loop di FastAPI in modo thread-safe
+            asyncio.run_coroutine_threadsafe(
+            manager.broadcast(data),
+            self.loop
+            )
         except Exception as e:
             logger.error(f"❌ Errore parsing AMQP: {e}")
-def start_amqp_thread(broker_url, address):
+def start_amqp_thread(broker_url, address, loop):
     """Funzione di supporto per far girare il consumer in un thread separato"""
     while True:
         try:
             logger.info(f"🔄 Tentativo connessione AMQP a {broker_url}...")
-            Container(AMQPConsumer(broker_url, address)).run()
+            Container(AMQPConsumer(broker_url, address, loop)).run()
         except Exception as e:
             logger.error(f"❌ Connessione AMQP fallita: {e}")
             logger.info("Retry tra 5 secondi...")
