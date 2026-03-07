@@ -24,13 +24,23 @@ public class StateEventListener {
     }
 
     @JmsListener(destination = "${app.jms.topicState}", containerFactory = "topicListenerFactory")
-    public void onStateEvent(String payload) {
+    public void onStateEventTopic(String payload) {
+        handleStateEvent(payload);
+    }
+
+    @JmsListener(destination = "${app.jms.topicState}", containerFactory = "queueListenerFactory")
+    public void onStateEventQueue(String payload) {
+        handleStateEvent(payload);
+    }
+
+    private void handleStateEvent(String payload) {
         if (payload == null || payload.isBlank()) {
             LOGGER.debug("Ignoring empty StateEvent payload");
             return;
         }
 
         String trimmedPayload = payload.trim();
+        LOGGER.info("StateEvent payload received size={} chars", trimmedPayload.length());
         if (!trimmedPayload.startsWith("{")) {
             LOGGER.debug("Ignoring non-JSON StateEvent payload: {}", abbreviate(trimmedPayload));
             return;
@@ -57,12 +67,13 @@ public class StateEventListener {
 
     private void processGroupedMetricsEvent(JsonNode root) {
         String groupId = asText(root.get("group_id"));
-        String updatedAt = asText(root.get("updated_at"));
+        String updatedAt = firstNonBlank(asText(root.get("updated_at")), asText(root.get("at")));
         String status = asText(root.get("status"));
         JsonNode metrics = root.get("metrics");
+        int generatedEvents = 0;
 
         for (JsonNode metric : metrics) {
-            String metricId = asText(metric.get("metric_id"));
+            String metricId = firstNonBlank(asText(metric.get("metric_id")), asText(metric.get("id")));
             if (groupId == null || metricId == null) {
                 continue;
             }
@@ -86,8 +97,18 @@ public class StateEventListener {
                 event.setUnit(asText(valueNode.get("unit")));
                 event.setStatus(status);
                 ruleEngineService.processStateEvent(event);
+                generatedEvents++;
             }
         }
+
+        LOGGER.info("Grouped StateEvent consumed groupId={} generatedEvents={}", groupId, generatedEvents);
+    }
+
+    private String firstNonBlank(String first, String second) {
+        if (first != null && !first.isBlank()) {
+            return first;
+        }
+        return second;
     }
 
     private String asText(JsonNode node) {

@@ -29,4 +29,12 @@ public class JmsConfig {
         factory.setPubSubDomain(true);
         return factory;
     }
+
+    @Bean
+    public JmsListenerContainerFactory<?> queueListenerFactory(ConnectionFactory connectionFactory) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setPubSubDomain(false);
+        return factory;
+    }
 }
