@@ -56,5 +56,5 @@ services:
     environment:
       AMQ_HOST: activemq
       AMQ_PORT: 61616
-      BACKEND_URL: http://host.docker.internal:8080
+      BACKEND_URL: http://simulator:8080
       LOG_LEVEL: INFO
