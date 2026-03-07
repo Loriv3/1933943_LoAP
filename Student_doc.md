@@ -28,6 +28,33 @@ MarsOps is a distributed automation platform designed to guarantee the survival 
 
 # CONTAINERS:
 
+## CONTAINER_NAME: converter
+
+### DESCRIPTION: 
+Handles ingestion, normalization, and forwarding of all IoT data from heterogeneous sources (REST sensors, SSE telemetry streams, and actuators) into a unified internal event format published to the message broker.
+
+### USER STORIES:
+1) As an operator, I want the system to periodically poll all REST sensors (greenhouse_temperature, co2_hall, etc.) so that data is continuously updated without manual intervention.
+2) As an operator, I want the system to receive all telemetry data in real time.
+3) As a developer, I want every raw payload to be converted into a standard internal event so that downstream components work on homogeneous data.
+4) As an ingestion component, I want every normalized event to be published to a message broker topic so that all services can consume it in a decoupled way.
+5) As an operator, I want the system to fetch the list of sensors and topics at startup so that no manual configuration is required.
+20) As the system, I want to keep the last known state of each actuator in memory so that the dashboard and the rule engine can access it without querying the environment every time.
+
+### PORTS: 
+No ports exposed. The service communicates exclusively via ActiveMQ message broker and outbound HTTP calls to the simulator.
+
+### DESCRIPTION:
+The Converter is a background service that acts as the data ingestion and normalization layer of the MarsOps platform. It continuously polls all REST sensors, maintains persistent SSE connections to all telemetry topics, and fetches the initial actuator snapshot at boot. Every raw payload is normalized into a schema-consistent internal event and published to ActiveMQ Artemis, ensuring that all downstream components work on homogeneous data regardless of the original source format. The service also listens for actuator commands from the Automation Engine, executes the corresponding REST API calls on the simulator, and publishes the resulting state change to the broker.
+
+### PERSISTENCE EVALUATION
+The Converter is stateless, it holds no persistent data. All normalized events are immediately forwarded to the message broker. Actuator states are not stored locally; the initial snapshot is fetched from the simulator REST API at boot and published to the broker for other services to consume.
+
+### EXTERNAL SERVICES CONNECTIONS
+- **Simulator (REST)** — `http://simulator:8080`: polled every 5 seconds for sensor readings via `GET /api/sensors/{id}`; queried once at boot for actuator states via `GET /api/actuators`; called on actuator commands via `POST /api/actuators/{id}`
+- **Simulator (SSE)** — `http://simulator:8080`: persistent SSE connections to all 7 telemetry topics via `GET /api/telemetry/stream/{topic}`
+- **ActiveMQ Artemis** — `activemq:61616` (STOMP protocol): publishes normalized sensor and telemetry events to `sensor.events`; publishes actuator state changes to `actuator.states`; subscribes to `actuator.commands` for incoming commands from the Automation Engine
+
 ## CONTAINER_NAME: activemq
 
 ### DESCRIPTION:
@@ -75,7 +102,7 @@ SQLite database persisted on Docker volume:
 
 ### MICROSERVICES:
 
-#### MICROSERVICE: automation-rules
+#### MICROSERVICE: <name of the microservice>
 - TYPE: backend
 - DESCRIPTION: rule management and real-time automation engine.
 - PORTS: `8080` (internal container), published as `8082`.

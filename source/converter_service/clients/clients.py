@@ -123,4 +123,10 @@ async def update_actuator(actuator_id: str, new_state: str) -> dict:
             json={"state": new_state}
         )
         r.raise_for_status()
-        return r.json()  # {"actuator": ..., "state": ..., "updated_at": ...}
+        data = r.json()
+        # Converti nel formato atteso dal normalizer
+        return {
+            "actuator_id": data["actuator"],
+            "is_on":       data["state"] == "ON",
+            "updated_at":  data["updated_at"],
+        }

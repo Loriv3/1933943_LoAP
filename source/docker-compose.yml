@@ -11,7 +11,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -23,7 +23,7 @@ services:
       - "61616:61616"
       - "8161:8161"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8161/console"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8161/console" ]
       interval: 10s
       timeout: 5s
       retries: 5
