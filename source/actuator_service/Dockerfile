@@ -20,4 +20,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia codice
 COPY . .
 
-CMD ["uvicorn", "actuator_service:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

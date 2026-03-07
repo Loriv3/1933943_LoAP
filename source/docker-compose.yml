@@ -4,6 +4,16 @@ services:
     container_name: simulator
     ports:
       - "8080:8080"
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
   activemq:
     build: ./amq_service
     container_name: activemq
@@ -11,11 +21,11 @@ services:
       - "61616:61616"
       - "8161:8161"
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "61613"]
-      interval: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:8161/console"]
+      interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 6s
+      retries: 5
+      start_period: 20s
     environment:
       ARTEMIS_USER: admin
       ARTEMIS_PASSWORD: admin
@@ -31,8 +41,12 @@ services:
       ARTEMIS_PASSWORD: admin
       SIMULATOR_URL: http://simulator:8080
     depends_on:
-      - activemq
-      - simulator
+      activemq:
+          condition: service_healthy
+      simulator:
+        condition: service_started
+      redis:
+        condition: service_healthy
   converter:
     build: ./converter_service
     container_name: converter
