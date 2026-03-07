@@ -1,4 +1,21 @@
 services:
+  simulator-loader:
+    image: docker:24-cli
+    container_name: simulator-loader
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./simulator_service:/simulator
+    command: >
+      sh -c "docker load -i /simulator/mars-iot-simulator-oci.tar"
+    restart: "no"
+  simulator:
+    image: mars-iot-simulator:multiarch_v1
+    container_name: simulator
+    ports:
+      - "8080:8080"
+    depends_on:
+      simulator-loader:
+        condition: service_completed_successfully
   activemq:
     build: ./amq_service
     container_name: activemq
@@ -20,6 +37,7 @@ services:
       ARTEMIS_PASSWORD: admin
     depends_on:
       - activemq
+      - simulator
   converter:
     build: ./converter_service
     container_name: converter
