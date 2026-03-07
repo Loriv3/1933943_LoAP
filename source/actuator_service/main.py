@@ -2,6 +2,7 @@ import os
 import threading
 import logging
 import asyncio
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 # Importiamo solo quello che serve veramente
@@ -34,4 +35,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Mars Actuator Service", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In produzione si mette l'URL esatto, per l'esame va bene "*"
+    allow_credentials=True,
+    allow_methods=["*"],  # Permette GET, POST, PUT, DELETE, ecc.
+    allow_headers=["*"],
+)
 app.include_router(router)
