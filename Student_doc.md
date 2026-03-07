@@ -205,7 +205,114 @@ SQLite database persisted on Docker volume:
 	| **id** | rule_id | fired_at | sensor_name | sensor_value | actuator_name | target_state |
 	| ------ | ------- | -------- | ----------- | ------------ | ------------- | ------------ |
 
+## CONTAINER_NAME: redis
 
+### DESCRIPTION:
+Redis key-value store used as an in-memory cache to maintain the latest known state of all sensors and actuators. It guarantees fast reads for the frontend initial load and decoupling from the message broker stream.
+
+### USER STORIES:
+16, 20
+
+### PORTS:
+- `6379` (Redis default port)
+
+### PERSISTENCE EVALUATION
+Configured as an ephemeral in-memory cache for this laboratory setup. Historical data persistence is explicitly not required by the specifications; only the latest state is cached. Data is lost upon container restart, and reconstructed dynamically via incoming AMQP streams.
+
+### EXTERNAL SERVICES CONNECTIONS
+- Accessed by `actuator_service` via Redis native protocol on port `6379`.
+
+
+## CONTAINER_NAME: actuator_service
+
+### DESCRIPTION:
+Python/FastAPI microservice acting as the state manager and API Gateway. It consumes real-time AMQP events, persists the latest state to Redis, provides a WebSocket stream for the frontend, and acts as a proxy for actuator commands towards the simulator.
+
+### USER STORIES:
+11, 16, 17, 18, 19, 20
+
+### PORTS:
+- `8000` (FastAPI web server)
+
+### PERSISTENCE EVALUATION
+Stateless service. State persistence is delegated entirely to the `redis` container. 
+
+### EXTERNAL SERVICES CONNECTIONS
+- Connects to `activemq` via AMQP 1.0 protocol on port `61616` to consume events.
+- Connects to `redis` on port `6379` to read/write state.
+- Forwards HTTP POST commands directly to the `simulator` on port `8080` to actuate devices.
+
+### MICROSERVICES:
+
+#### MICROSERVICE: actuator-service
+- TYPE: backend
+- DESCRIPTION: Real-time state cache, WebSocket broadcaster, and Actuator API Facade.
+- PORTS: `8000` (internal container), published as `8000`.
+- TECHNOLOGICAL SPECIFICATION:
+	- Python 3.12
+	- Web Framework: FastAPI + Uvicorn
+	- AMQP Client: `python-qpid-proton`
+	- Caching: `redis-py`
+	- Async HTTP Client: `httpx`
+- SERVICE ARCHITECTURE:
+	- Threaded AMQP Consumer loop decoupled from the main asyncio event loop.
+	- Redis-backed state management.
+	- Async Connection Manager for WebSocket multiplexing and broadcasting.
+	- REST Proxy to forward actuator commands.
+
+- ENDPOINTS:
+
+| HTTP METHOD | URL | Description | User Stories |
+| ----------- | --- | ----------- | ------------ |
+| GET | `/api/state` | Returns a JSON dictionary of the latest known state of all devices from Redis. | 16, 17, 20 |
+| GET | `/api/state/{device_id}` | Returns the latest state of a specific device (sensor or actuator). | 20 |
+| POST | `/api/actuators/{actuator_id}/control` | Proxies command to simulator, updates Redis cache, and triggers a WebSocket broadcast. | 18, 19 |
+| WS (WebSocket) | `/ws/updates` | Real-time push of normalized JSON payloads directly to connected frontend clients. | 11, 19 |
+
+- MESSAGE CONTRACTS:
+
+1. Accepted telemetry payloads on AMQP topic (internal representation):
+	 ```json
+	 {
+	   "converter_version": "1.0.0",
+	   "group_id": "greenhouse_temperature",
+	   "at": "2026-03-07T13:44:17.132744+00:00",
+	   "metrics": [
+	     {
+	       "id": "temperature",
+	       "type": "thermal.temperature",
+	       "value": [{"value": 24.01, "unit": "C"}]
+	     }
+	   ],
+	   "status": "ok"
+	 }
+	 ```
+
+2. Received Command format (`POST /api/actuators/{actuator_id}/control`):
+	 ```json
+	 {
+	   "state": "ON"
+	 }
+	 ```
+
+3. Broadcasted WebSockets Payload (Actuator update):
+	 ```json
+	 {
+	   "type": "actuator",
+	   "actuator_id": "cooling_fan",
+	   "is_on": true,
+	   "updated_at": "2026-03-07T13:44:17.132744+00:00"
+	 }
+	 ```
+
+## IMPLEMENTATION AND TEST SUMMARY (actuator_service)
+
+- Resolved Python memoryview parsing issues for AMQP binary payloads.
+- Validated Pydantic models against the exact structure sent by the Converter.
+- Established thread-safe communication between sync `qpid-proton` and async `FastAPI` loops.
+- Verified successful writing and reading of complex nested JSON metrics inside Redis.
+- Validated WebSocket real-time broadcast functionality handling multiple simultaneous connections.
+- Implemented API Facade updating Redis and triggering WS broadcast upon successful simulator actuation.
 ## IMPLEMENTATION AND TEST SUMMARY
 
 - Implemented service build/run with Docker Compose (`activemq` + `automation-rules`).
@@ -216,3 +323,124 @@ SQLite database persisted on Docker volume:
 - Verified negative tests:
 	- unit mismatch (`C` rule vs `F` event) does not trigger command.
 	- value below threshold does not trigger command.
+
+## CONTAINER_NAME: redis
+
+### DESCRIPTION:
+Redis key-value store used as an in-memory cache to maintain the latest known state of all sensors and actuators. It guarantees fast reads for the frontend initial load and decoupling from the message broker stream.
+
+### USER STORIES:
+16, 20
+
+### PORTS:
+- `6379` (Redis default port)
+
+### PERSISTENCE EVALUATION
+Configured as an ephemeral in-memory cache for this laboratory setup. Historical data persistence is explicitly not required by the specifications; only the latest state is cached. Data is lost upon container restart, and reconstructed dynamically via incoming AMQP streams.
+
+### EXTERNAL SERVICES CONNECTIONS
+- Accessed by `actuator_service` via Redis native protocol on port `6379`.
+
+
+## CONTAINER_NAME: actuator_service
+
+### DESCRIPTION:
+Python/FastAPI microservice acting as the state manager and API Gateway. It consumes real-time AMQP events, persists the latest state to Redis, provides a WebSocket stream for the frontend, and acts as a proxy for actuator commands towards the simulator.
+
+### USER STORIES:
+11, 16, 17, 18, 19, 20
+
+### PORTS:
+- `8000` (FastAPI web server)
+
+### PERSISTENCE EVALUATION
+Stateless service. State persistence is delegated entirely to the `redis` container. 
+
+### EXTERNAL SERVICES CONNECTIONS
+- Connects to `activemq` via AMQP 1.0 protocol on port `61616` to consume events.
+- Connects to `redis` on port `6379` to read/write state.
+- Forwards HTTP POST commands directly to the `simulator` on port `8080` to actuate devices.
+
+### MICROSERVICES:
+
+#### MICROSERVICE: actuator-service
+- TYPE: backend
+- DESCRIPTION: Real-time state cache, WebSocket broadcaster, and Actuator API Facade.
+- PORTS: `8000` (internal container), published as `8000`.
+- TECHNOLOGICAL SPECIFICATION:
+	- Python 3.12
+	- Web Framework: FastAPI + Uvicorn
+	- AMQP Client: `python-qpid-proton`
+	- Caching: `redis-py`
+	- Async HTTP Client: `httpx`
+- SERVICE ARCHITECTURE:
+	- Threaded AMQP Consumer loop decoupled from the main asyncio event loop.
+	- Redis-backed state management.
+	- Async Connection Manager for WebSocket multiplexing and broadcasting.
+	- REST Proxy to forward actuator commands.
+
+- ENDPOINTS:
+
+| HTTP METHOD | URL | Description | User Stories |
+| ----------- | --- | ----------- | ------------ |
+| GET | `/api/state` | Returns a JSON dictionary of the latest known state of all devices from Redis. | 16, 17, 20 |
+| GET | `/api/state/{device_id}` | Returns the latest state of a specific device (sensor or actuator). | 20 |
+| POST | `/api/actuators/{actuator_id}/control` | Proxies command to simulator, updates Redis cache, and triggers a WebSocket broadcast. | 18, 19 |
+| WS (WebSocket) | `/ws/updates` | Real-time push of normalized JSON payloads directly to connected frontend clients. | 11, 19 |
+
+- MESSAGE CONTRACTS:
+
+1. Accepted telemetry payloads on AMQP topic (internal representation):
+	 ```json
+	 {
+	   "converter_version": "1.0.0",
+	   "group_id": "greenhouse_temperature",
+	   "at": "2026-03-07T13:44:17.132744+00:00",
+	   "metrics": [
+	     {
+	       "id": "temperature",
+	       "type": "thermal.temperature",
+	       "value": [{"value": 24.01, "unit": "C"}]
+	     }
+	   ],
+	   "status": "ok"
+	 }
+	 ```
+
+2. Received Command format (`POST /api/actuators/{actuator_id}/control`):
+	 ```json
+	 {
+	   "state": "ON"
+	 }
+	 ```
+
+3. Broadcasted WebSockets Payload (Actuator update):
+	 ```json
+	 {
+	   "type": "actuator",
+	   "actuator_id": "cooling_fan",
+	   "is_on": true,
+	   "updated_at": "2026-03-07T13:44:17.132744+00:00"
+	 }
+	 ```
+
+## IMPLEMENTATION AND TEST SUMMARY (actuator_service)
+
+
+**Technical Implementation & Problem Solving:**
+- Successfully implemented a hybrid sync/async architecture, bridging the synchronous `qpid-proton` AMQP consumer thread with the asynchronous FastAPI event loop via thread-safe coroutines.
+- Resolved low-level AMQP payload parsing issues by correctly decoding byte arrays/memoryviews into UTF-8 JSON strings before Pydantic validation.
+- Configured a robust CORS middleware to allow seamless communication between the independent frontend dashboard and the API Facade.
+
+**Functional End-to-End Testing:**
+- **State Caching:** Verified that incoming telemetry and actuator events from the `sensor.events` topic are instantly and correctly upserted into the Redis database. Verified that the `GET /api/state` endpoint correctly returns the aggregated initial state for the dashboard.
+- **Real-Time Streaming:** Verified that the WebSocket manager successfully broadcasts incoming normalized events to all connected clients in real-time without noticeable latency.
+- **Actuator Command Proxy:** Verified that manual commands sent via `POST /api/actuators/{id}/control` are correctly forwarded to the Simulator. 
+- **State Synchronization:** Tested and verified the "Single Source of Truth" logic: upon a successful 200 OK response from the Simulator for an actuation command, the service instantly updates the Redis cache and triggers a WebSocket broadcast, guaranteeing that the frontend is updated immediately without requiring additional polling.
+
+- Resolved Python memoryview parsing issues for AMQP binary payloads.
+- Validated Pydantic models against the exact structure sent by the Converter.
+- Established thread-safe communication between sync `qpid-proton` and async `FastAPI` loops.
+- Verified successful writing and reading of complex nested JSON metrics inside Redis.
+- Validated WebSocket real-time broadcast functionality handling multiple simultaneous connections.
+- Implemented API Facade updating Redis and triggering WS broadcast upon successful simulator actuation.
