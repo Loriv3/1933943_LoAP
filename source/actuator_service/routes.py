@@ -21,6 +21,23 @@ async def get_actuators_list():
     except Exception as e:
         logger.error(f"Error fetching all actuators from cache: {e}")
 
+@router.websocket("/api/actuators/ws")
+async def get_actuators_all(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        async with httpx.AsyncClient() as httpx_client:
+            cache_data = (await httpx_client.get(f"{CACHE_URL}/api/actuators")).json()
+            logger.info(f"Got cache response for all: {cache_data}")
+            for value in cache_data.values():
+                await connection_manager.send_message(websocket, value)
+        await connection_manager.connect(websocket, None)
+        while True:
+            # Wait for a message to handle disconnection
+            await websocket.receive_text()
+    except Exception as e:
+        logger.error(f"Error in socket for all: {e}")
+        connection_manager.disconnect(websocket)
+
 @router.websocket("/api/actuators/{actuator_id}/ws")
 async def get_actuators_group(websocket: WebSocket, actuator_id: str):
     await websocket.accept()

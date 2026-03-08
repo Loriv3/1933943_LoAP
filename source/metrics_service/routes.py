@@ -19,6 +19,23 @@ async def get_metrics_list():
     except Exception as e:
         logger.error(f"Error fetching all metrics from cache: {e}")
 
+@router.websocket("/api/metrics/ws")
+async def get_metrics_all(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        async with httpx.AsyncClient() as httpx_client:
+            cache_data = (await httpx_client.get(f"{CACHE_URL}/api/metrics")).json()
+            logger.info(f"Got cache response for all: {cache_data}")
+            for value in cache_data.values():
+                await connection_manager.send_message(websocket, value)
+        await connection_manager.connect(websocket, None)
+        while True:
+            # Wait for a message to handle disconnection
+            await websocket.receive_text()
+    except Exception as e:
+        logger.error(f"Error in socket for all: {e}")
+        connection_manager.disconnect(websocket)
+
 @router.websocket("/api/metrics/{group_id}/ws")
 async def get_metrics_group(websocket: WebSocket, group_id: str):
     await websocket.accept()

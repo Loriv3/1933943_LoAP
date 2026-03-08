@@ -1,9 +1,10 @@
 from fastapi import WebSocket
+from typing import Optional
 
 from log_config import logger
 
 class Connection:
-    def __init__(self, websocket: WebSocket, id: str):
+    def __init__(self, websocket: WebSocket, id: Optional[str]):
         self.websocket = websocket
         self.id = id
 
@@ -11,8 +12,9 @@ class ConnectionManager:
     def __init__(self):
         self.connections: list[Connection] = []
 
-    async def connect(self, websocket: WebSocket, id: str, init_data: dict):
-        await self.send_message(websocket, init_data)
+    async def connect(self, websocket: WebSocket, id: Optional[str], init_data: Optional[dict] = None):
+        if init_data is not None:
+            await self.send_message(websocket, init_data)
         self.connections.append(Connection(websocket, id))
         logger.info(f"Connection opened for {id}")
 
@@ -27,7 +29,7 @@ class ConnectionManager:
 
     async def broadcast(self, id: str, message: dict):
         for connection in self.connections:
-            if connection.id != id:
+            if connection.id != id and connection.id is not None:
                 continue
             try:
                 await self.send_message(connection.websocket, message)
