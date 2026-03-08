@@ -46,8 +46,8 @@ class AMQPublisher:
 
     def publish_sensor(self, event: UnifiedEvent):
         self._publish(SENSORS_QUEUE, event.to_dict())
-        logger.debug(f"[sensor.events] {event.group_id} | status={event.status}")
+        logger.info(f"[sensor.events] {event.group_id} | status={event.status}")
 
     def publish_actuator(self, event: ActuatorEvent):
         self._publish(ACTUATORS_QUEUE, event.to_dict())
-        logger.debug(f"[actuator.commands] {event.actuator_id} | is_on={event.is_on}")
+        logger.info(f"[actuator.states] {event.actuator_id} | is_on={event.is_on}")
