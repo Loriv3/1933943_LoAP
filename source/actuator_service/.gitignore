@@ -1,0 +1,5 @@
+.env
+venv/
+__pycache__
+output_sensors.jsonl
+output_actuators.jsonl
