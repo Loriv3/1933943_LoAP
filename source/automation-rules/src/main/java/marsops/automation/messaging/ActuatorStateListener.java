@@ -34,6 +34,7 @@ public class ActuatorStateListener {
 
     private void handle(String payload, String sourceQueue) {
         if (payload == null || payload.isBlank()) {
+            LOGGER.debug("Ignoring empty actuator-state payload from {}", sourceQueue);
             return;
         }
 
@@ -43,6 +44,7 @@ public class ActuatorStateListener {
 
             TargetState targetState = parseTargetState(root);
             if (targetState == null) {
+                LOGGER.debug("Ignoring actuator-state payload without state field source={} payload={}", sourceQueue, abbreviate(payload));
                 return;
             }
 
@@ -82,5 +84,13 @@ public class ActuatorStateListener {
             return first;
         }
         return second;
+    }
+
+    private String abbreviate(String payload) {
+        int maxLen = 160;
+        if (payload.length() <= maxLen) {
+            return payload;
+        }
+        return payload.substring(0, maxLen) + "...";
     }
 }

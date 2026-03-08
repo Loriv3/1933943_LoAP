@@ -7,6 +7,8 @@ import marsops.automation.repo.RuleRepository;
 import marsops.automation.web.dto.CreateRuleRequest;
 import marsops.automation.web.dto.SetEnabledRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,6 +31,8 @@ import java.util.Map;
 @RequestMapping("/api/rules")
 public class RuleController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RuleController.class);
+
     private final RuleRepository ruleRepository;
 
     public RuleController(RuleRepository ruleRepository) {
@@ -37,14 +41,16 @@ public class RuleController {
 
     @GetMapping
     public List<Rule> listRules() {
-        return ruleRepository.findAll();
+        List<Rule> rules = ruleRepository.findAll();
+        LOGGER.info("[AUTOMATION-AUDIT] listRules size={}", rules.size());
+        return rules;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Rule createRule(@Valid @RequestBody CreateRuleRequest request) {
         validateDomain(request);
-        return ruleRepository.create(
+        Rule createdRule = ruleRepository.create(
             Boolean.TRUE.equals(request.getEnabled()),
             request.getSensorName(),
             request.getOperator(),
@@ -53,12 +59,21 @@ public class RuleController {
             request.getActuatorName(),
             request.getTargetState().toUpperCase()
         );
+        LOGGER.info("[AUTOMATION-AUDIT] createRule id={} sensor={} operator={} threshold={} actuator={} targetState={} enabled={}",
+            createdRule.getId(),
+            createdRule.getSensorName(),
+            createdRule.getOperator(),
+            createdRule.getThresholdValue(),
+            createdRule.getActuatorName(),
+            createdRule.getTargetState(),
+            createdRule.isEnabled());
+        return createdRule;
     }
 
     @PutMapping("/{id}")
     public Rule updateRule(@PathVariable("id") String id, @Valid @RequestBody CreateRuleRequest request) {
         validateDomain(request);
-        return ruleRepository.update(
+        Rule updatedRule = ruleRepository.update(
                 id,
                 Boolean.TRUE.equals(request.getEnabled()),
                 request.getSensorName(),
@@ -69,6 +84,15 @@ public class RuleController {
                 request.getTargetState().toUpperCase()
             )
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
+        LOGGER.info("[AUTOMATION-AUDIT] updateRule id={} sensor={} operator={} threshold={} actuator={} targetState={} enabled={}",
+            updatedRule.getId(),
+            updatedRule.getSensorName(),
+            updatedRule.getOperator(),
+            updatedRule.getThresholdValue(),
+            updatedRule.getActuatorName(),
+            updatedRule.getTargetState(),
+            updatedRule.isEnabled());
+        return updatedRule;
     }
 
     @PatchMapping("/{id}/enabled")
@@ -76,6 +100,7 @@ public class RuleController {
     public void setEnabled(@PathVariable("id") String id, @Valid @RequestBody SetEnabledRequest request) {
         ruleRepository.setEnabled(id, request.getEnabled())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
+        LOGGER.info("[AUTOMATION-AUDIT] setEnabled id={} enabled={}", id, request.getEnabled());
     }
 
     @DeleteMapping("/{id}")
@@ -84,17 +109,20 @@ public class RuleController {
         if (!ruleRepository.deleteById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found");
         }
+        LOGGER.info("[AUTOMATION-AUDIT] deleteRule id={}", id);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationError() {
+        LOGGER.warn("[AUTOMATION-AUDIT] validationError invalid request payload");
         return Map.of("error", "Invalid request payload");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleIllegalArgument(IllegalArgumentException exception) {
+        LOGGER.warn("[AUTOMATION-AUDIT] domainValidationError message={}", exception.getMessage());
         return Map.of("error", exception.getMessage());
     }
 
