@@ -35,7 +35,7 @@ async def get_actuators_all():
 
 @router.get("/api/actuators/{actuator_id}")
 async def get_metrics_group(actuator_id: str):
-    data = redis_client.get(f"actuator.{group_id}")
+    data = redis_client.get(f"actuator.{actuator_id}")
     if not data:
         raise HTTPException(status_code=404, detail="Not found in cache")
     return json.loads(data)

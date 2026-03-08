@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting AMQP producer thread...")
     producer_thread = threading.Thread(
         target=start_amqp_producer,
-        args=(BROKER_URL,),
+        args=(BROKER_URL, main_loop),
         daemon=True
     )
     producer_thread.start()

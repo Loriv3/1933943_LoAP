@@ -11,19 +11,19 @@ class ConnectionManager:
     def __init__(self):
         self.connections: list[Connection] = []
 
-    def connect(self, websocket: WebSocket, id: str, init_data: dict):
-        self.send_message(websocket, init_data)
+    async def connect(self, websocket: WebSocket, id: str, init_data: dict):
+        await self.send_message(websocket, init_data)
         self.connections.append(Connection(websocket, id))
         logger.info(f"Connection opened for {id}")
 
     def disconnect(self, websocket: WebSocket):
         for connection in self.connections:
             if connection.websocket == websocket:
-                self.connections.remove(websocket)
+                self.connections.remove(connection)
                 logger.info(f"Connection closed for {connection.id}")
 
     async def send_message(self, websocket: WebSocket, message: dict):
-        websocket.send_json(message)
+        await websocket.send_json(message)
 
     async def broadcast(self, id: str, message: dict):
         for connection in self.connections:
