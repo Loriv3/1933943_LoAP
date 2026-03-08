@@ -46,7 +46,9 @@ def start_amqp_receiver(broker_url, address, consumer):
     while True:
         try:
             logger.info(f"[AMQP] Connection attempt to {broker_url}...")
-            Container(AMQPReceiver(broker_url, address, consumer)).run()
+            container = Container(AMQPReceiver(broker_url, address, consumer))
+            container.container_id = "cache_service"
+            container.run()
         except Exception as e:
             logger.error(f"[AMQP] Connection failed: {e}")
             logger.info(f"Retry in {RETRY_DELAY} seconds...")

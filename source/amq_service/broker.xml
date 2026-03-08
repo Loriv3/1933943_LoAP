@@ -19,15 +19,17 @@
       <addresses>
 
          <address name="sensor.events">
-            <multicast/>
+            <multicast />
          </address>
 
          <address name="actuator.states">
-            <multicast/>
+            <multicast />
          </address>
 
          <address name="actuator.commands">
-            <anycast/>
+            <anycast>
+               <queue name="actuator.commands" />
+            </anycast>
          </address>
 
       </addresses>
