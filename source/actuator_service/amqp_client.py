@@ -46,11 +46,11 @@ class AMQPConsumer(MessagingHandler):
             if "metrics" in data:
                 obj = MetricEvent(**data)
                 in_memory_cache[obj.group_id] = obj
-                logger.info(f"💾 Metrica salvata nella cache locale per: {obj.group_id}")  # LOG DI CONFERMA
+                #logger.info(f"💾 Metrica salvata nella cache locale per: {obj.group_id}")  # LOG DI CONFERMA
             elif "actuator_id" in data:
                 obj = ActuatorEvent(**data)
                 in_memory_cache[obj.actuator_id] = obj
-                logger.info(f"💾 Stato attuatore salvato nella cache locale: {obj.actuator_id}")  # LOG DI CONFERMA
+                #logger.info(f"💾 Stato attuatore salvato nella cache locale: {obj.actuator_id}")  # LOG DI CONFERMA
             # PONTE VERSO WEBSOCKET:
             # Spediamo il messaggio al loop di FastAPI in modo thread-safe
             asyncio.run_coroutine_threadsafe(
