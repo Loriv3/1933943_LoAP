@@ -32,17 +32,16 @@ services:
       ARTEMIS_USER: admin
       ARTEMIS_PASSWORD: admin
 
-  actuator_service:
-    build: ./actuator_service
-    container_name: actuator_service
+  cache_service:
+    build: ./cache_service
+    container_name: cache_service
     ports:
-      - "8000:8000"
+      - "8081:8080"
     environment:
       ARTEMIS_HOST: activemq
       ARTEMIS_PORT: 61616
       ARTEMIS_USER: admin
       ARTEMIS_PASSWORD: admin
-      SIMULATOR_URL: http://simulator:8080
     depends_on:
       activemq:
         condition: service_healthy
@@ -50,6 +49,40 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+
+  metrics_service:
+    build: ./metrics_service
+    container_name: metrics_service
+    ports:
+      - "8082:8080"
+    environment:
+      ARTEMIS_HOST: activemq
+      ARTEMIS_PORT: 61616
+      ARTEMIS_USER: admin
+      ARTEMIS_PASSWORD: admin
+      CACHE_URL: http://cache_service:8080
+    depends_on:
+      activemq:
+        condition: service_healthy
+      cache_service:
+        condition: service_started
+
+  actuator_service:
+    build: ./actuator_service
+    container_name: actuator_service
+    ports:
+      - "8083:8080"
+    environment:
+      ARTEMIS_HOST: activemq
+      ARTEMIS_PORT: 61616
+      ARTEMIS_USER: admin
+      ARTEMIS_PASSWORD: admin
+      CACHE_URL: http://cache_service:8080
+    depends_on:
+      activemq:
+        condition: service_healthy
+      cache_service:
+        condition: service_started
 
   converter:
     build: ./converter_service
@@ -74,7 +107,7 @@ services:
     volumes:
       - automation_rules_data:/data
     ports:
-      - "8082:8080"
+      - "8084:8080"
 
 volumes:
   automation_rules_data:

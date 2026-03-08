@@ -7,7 +7,6 @@ from contextlib import asynccontextmanager
 
 from log_config import logger
 from amqp_consumer import start_amqp_consumer
-from amqp_producer import start_amqp_producer
 from routes import router
 
 BROKER_HOST = os.getenv("ARTEMIS_HOST")
@@ -21,24 +20,14 @@ async def lifespan(app: FastAPI):
     global main_loop
     main_loop = asyncio.get_running_loop() # Save FastAPI loop
 
-    logger.info("Starting AMQP consumer thread...")
-    consumer_thread = threading.Thread(
+    logger.info("Starting AMQP thread...")
+    thread = threading.Thread(
         target=start_amqp_consumer,
         args=(BROKER_URL, main_loop),
         daemon=True
     )
-    consumer_thread.start()
-
-    logger.info("Starting AMQP producer thread...")
-    producer_thread = threading.Thread(
-        target=start_amqp_producer,
-        args=(BROKER_URL,),
-        daemon=True
-    )
-    producer_thread.start()
-
+    thread.start()
     yield
-
     logger.info("Stopping service")
 
 app = FastAPI(title="MarsOps Cache Service", lifespan=lifespan)
