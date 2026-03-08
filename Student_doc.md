@@ -232,7 +232,7 @@ Python/FastAPI microservice acting as the state manager and API Gateway. It cons
 11, 16, 17, 18, 19, 20
 
 ### PORTS:
-- `8000` (FastAPI web server)
+- `8080` (FastAPI web server)
 
 ### PERSISTENCE EVALUATION
 Stateless service. State persistence is delegated entirely to the `redis` container. 
@@ -247,7 +247,7 @@ Stateless service. State persistence is delegated entirely to the `redis` contai
 #### MICROSERVICE: actuator-service
 - TYPE: backend
 - DESCRIPTION: Real-time state cache, WebSocket broadcaster, and Actuator API Facade.
-- PORTS: `8000` (internal container), published as `8000`.
+- PORTS: `8080` (internal container), published as `8080`.
 - TECHNOLOGICAL SPECIFICATION:
 	- Python 3.12
 	- Web Framework: FastAPI + Uvicorn
