@@ -40,6 +40,14 @@ function AppInner() {
                             Groups
                         </Nav.Link>
                     </Nav>
+                    <span
+                        style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            backgroundColor: "green",
+                            display: "inline-block",
+                        }} />
                 </Container>
             </Navbar>
             <div className="app-content">
