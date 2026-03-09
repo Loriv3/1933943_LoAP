@@ -113,7 +113,7 @@ services:
       - automation_rules_data:/data
     ports:
       - "8084:8080"
-  
+
   frontend:
     build: ./frontend
     container_name: frontend

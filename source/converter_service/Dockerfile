@@ -2,6 +2,13 @@
 FROM docker.io/python:3.12-slim AS builder
 
 WORKDIR /app
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    build-essential \
+    libssl-dev \
+    libsasl2-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
@@ -11,6 +18,7 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 FROM docker.io/python:3.12-slim
 
 WORKDIR /app
+
 
 # Copia dipendenze dal builder
 COPY --from=builder /install /usr/local

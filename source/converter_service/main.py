@@ -14,6 +14,10 @@ import logging
 import os
 import stomp
 import time
+from proton.handlers import MessagingHandler
+from proton.reactor import Container
+import json
+import threading
 
 from normalizers.normalizers import normalize
 from clients.clients import poll_sensors, subscribe_all_topics, fetch_all_actuators, update_actuator
@@ -26,12 +30,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger("converter")
 
+
+
 # ─── Config da environment ────────────────────────────────────────────────────
 
 AMQ_HOST      = os.getenv("AMQ_HOST", "localhost")
 AMQ_PORT      = int(os.getenv("AMQ_PORT", "61616"))
 POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "5.0"))
-
+BROKER_URL = f"amqp://{AMQ_HOST}:{AMQ_PORT}"
 COMMANDS_QUEUE = "actuator.commands"
 
 # ─── Publisher globale ────────────────────────────────────────────────────────
@@ -61,42 +67,47 @@ async def on_actuator_command(actuator_id: str, is_on: bool):
 
 # ─── AMQ Command Listener ─────────────────────────────────────────────────────
 
-class CommandListener(stomp.ConnectionListener):
-    """
-    Ascolta i comandi in arrivo su actuator.commands.
-    Formato atteso: {"actuator_id": "cooling_fan", "is_on": true}
-    """
-    def __init__(self, loop: asyncio.AbstractEventLoop):
+from proton.handlers import MessagingHandler
+from proton.reactor import Container
+import json
+import threading
+
+class CommandReceiver(MessagingHandler):
+    def __init__(self, broker_url, loop):
+        super().__init__()
+        self.broker_url = broker_url
         self.loop = loop
 
-    def on_message(self, frame):
+    def on_start(self, event):
+        conn = event.container.connect(self.broker_url)
+        event.container.create_receiver(conn, source="actuator.commands")
+        logger.info("[AMQP] Listening on actuator.commands")
+
+    def on_message(self, event):
         try:
-            cmd = json.loads(frame.body)
-            actuator_id = cmd["actuator_id"]
-            is_on       = cmd["is_on"]
-            asyncio.run_coroutine_threadsafe(
-                on_actuator_command(actuator_id, is_on),
-                self.loop
-            )
+            raw = event.message.body
+            if isinstance(raw, memoryview):
+                raw = raw.tobytes().decode("utf-8")
+            elif isinstance(raw, bytes):
+                raw = raw.decode("utf-8")
+            
+            cmd = json.loads(raw)
+            logger.info(f"[AMQP] Command received: {cmd}")
+            asyncio.run_coroutine_threadsafe(on_actuator_command(cmd["actuator_id"], cmd["is_on"]), self.loop)
         except Exception as e:
-            logger.error(f"Invalid command: {e} — body: {frame.body}")
+            logger.error(f"[AMQP] Error parsing command: {e}")
 
-    def on_error(self, frame):
-        logger.error(f"AMQ error: {frame}")
-
-    def on_disconnected(self):
-        logger.warning("AMQ command listener disconnected - reconnecting in 5s...")
-        time.sleep(5)
-        setup_command_listener(self.loop)
-
-
-def setup_command_listener(loop: asyncio.AbstractEventLoop) -> stomp.Connection:
-    conn = stomp.Connection([(AMQ_HOST, AMQ_PORT)], heartbeats=(10000, 10000))
-    conn.set_listener("command_listener", CommandListener(loop))
-    conn.connect(wait=True)
-    conn.subscribe(destination=COMMANDS_QUEUE, id=1, ack="auto")
-    logger.info(f"Listening for commands on {COMMANDS_QUEUE}")
-    return conn
+def start_command_listener(broker_url: str, loop: asyncio.AbstractEventLoop):
+    def run():
+        while True:
+            try:
+                container = Container(CommandReceiver(broker_url, loop))
+                container.run()
+            except Exception as e:
+                logger.error(f"[AMQP] Command listener failed: {e} — retrying in 5s")
+                time.sleep(5)
+    
+    threading.Thread(target=run, daemon=True).start()
 
 # ─── Boot actuators ───────────────────────────────────────────────────────────
 
@@ -126,7 +137,7 @@ async def main():
 
     # 3. Setup listener comandi
     loop = asyncio.get_event_loop()
-    cmd_conn = setup_command_listener(loop)
+    start_command_listener(BROKER_URL, loop)
 
     # 4. Polling + SSE in parallelo
     logger.info("Starting sensor polling and telemetry streams...")
@@ -136,7 +147,7 @@ async def main():
             subscribe_all_topics(on_sensor_event),
         )
     finally:
-        cmd_conn.disconnect()
+        
         publisher.disconnect()
 
 
