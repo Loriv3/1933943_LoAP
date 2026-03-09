@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import stomp
+import time
 
 from normalizers.normalizers import normalize
 from clients.clients import poll_sensors, subscribe_all_topics, fetch_all_actuators, update_actuator
@@ -84,11 +85,13 @@ class CommandListener(stomp.ConnectionListener):
         logger.error(f"AMQ error: {frame.body}")
 
     def on_disconnected(self):
-        logger.warning("AMQ command listener disconnected")
+        logger.warning("AMQ command listener disconnected - reconnecting in 5s...")
+        time.sleep(5)
+        setup_command_listener(self.loop)
 
 
 def setup_command_listener(loop: asyncio.AbstractEventLoop) -> stomp.Connection:
-    conn = stomp.Connection([(AMQ_HOST, AMQ_PORT)])
+    conn = stomp.Connection([(AMQ_HOST, AMQ_PORT)], heartbeats=(10000, 10000))
     conn.set_listener("command_listener", CommandListener(loop))
     conn.connect(wait=True)
     conn.subscribe(destination=COMMANDS_QUEUE, id=1, ack="auto")
