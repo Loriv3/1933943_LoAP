@@ -2,7 +2,7 @@ import "./StatusHistoryVis.css";
 
 import { Chart as ChartJS, type ChartOptions } from "chart.js";
 import { useCallback, useEffect, useRef } from "react";
-import { Status } from "../../store/GroupState";
+import { Status } from "../../store/metrics/GroupHistory";
 import { binaryGradient } from "../../utils";
 
 const chartOptions = {

@@ -6,7 +6,6 @@ import {
     LineController,
     LineElement,
     PointElement,
-    TimeScale,
     TimeSeriesScale,
     Tooltip,
     type ChartOptions,
@@ -15,7 +14,8 @@ import {
     type ScriptableContext,
 } from "chart.js";
 import React, { useEffect, useState } from "react";
-import type { MetricUnit } from "./store/MetricState";
+import type { MetricUnit } from "./store/metrics/MetricHistory";
+import { Status } from "./store/metrics/GroupHistory";
 
 export interface CSSProperties extends React.CSSProperties {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -158,37 +158,48 @@ export function arrayLast<T>(arr: T[] | null | undefined): T | null {
     return arr?.length ? arr[arr.length - 1] : null;
 }
 
-export function formatUnit(value: number, unit: MetricUnit) {
+export function formatUnit(value: string | number, unit: MetricUnit) {
     switch (unit) {
         case "pH":
-            return `pH ${value.toFixed(2)}`;
+            return `pH ${(value as number).toFixed(2)}`;
         case "ppm":
-            return `${value.toFixed(2)} ppm`;
+            return `${(value as number).toFixed(2)} ppm`;
         case "ppb":
-            return `${value.toFixed(2)} ppb`;
+            return `${(value as number).toFixed(2)} ppb`;
         case "%":
-            return `${(value * 100).toFixed(2)}%`;
-        case "g/m3":
-            return `${value.toFixed(2)} g/m3`;
+            return `${(value as number).toFixed(2)}%`;
+        case "ug/m3":
+            return `${(value as number).toFixed(2)} ug/m3`;
         case "L":
-            return `${value.toFixed(2)} L`;
+            return `${(value as number).toFixed(2)} L`;
         case "C":
-            return `${value.toFixed(1)} C`;
-        case "Pa":
-            return `${(value / 100).toFixed(2)} hPa`;
-        case "h^-1":
-            return `${value.toFixed(3)} cyc/h`;
-        case "Sv/h":
-            return `${value.toFixed(2)} Sv/h`;
-        case "W":
-            return `${(value / 1000).toFixed(2)} kW`;
-        case "Wh":
-            return `${(value / 1000).toFixed(2)} Wh`;
+            return `${(value as number).toFixed(1)} C`;
+        case "kPa":
+            return `${((value as number) * 10).toFixed(2)} hPa`;
+        case "cyc/h":
+            return `${(value as number).toFixed(3)} cyc/h`;
+        case "uSv/h":
+            return `${(value as number).toFixed(2)} uSv/h`;
+        case "kW":
+            return `${((value as number) / 1000).toFixed(2)} kW`;
+        case "kWh":
+            return `${((value as number) / 1000).toFixed(2)} kWh`;
         case "V":
-            return `${value.toFixed(2)} V`;
+            return `${(value as number).toFixed(2)} V`;
         case "A":
-            return `${value.toFixed(2)} A`;
+            return `${(value as number).toFixed(2)} A`;
         case "L/min":
-            return `${value.toFixed(2)} L/min`;
+            return `${(value as number).toFixed(2)} L/min`;
+        case "":
+            console.log(value);
+            return (
+                (value as string)[0].toLocaleUpperCase() +
+                (value as string).slice(1).toLocaleLowerCase()
+            );
     }
 }
+
+export const statusToBootstrapColor = {
+    [Status.Ok]: "success",
+    [Status.Warning]: "warning",
+};

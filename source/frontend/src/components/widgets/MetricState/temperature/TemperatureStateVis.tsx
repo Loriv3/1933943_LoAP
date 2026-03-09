@@ -1,5 +1,5 @@
-import type { MetricUnit } from "../../../store/MetricState";
-import { formatUnit, type CSSProperties } from "../../../utils";
+import type { MetricUnit } from "../../../../store/metrics/MetricHistory";
+import { formatUnit, type CSSProperties } from "../../../../utils";
 import "./TemperatureStateVis.css";
 
 function Thermometer({

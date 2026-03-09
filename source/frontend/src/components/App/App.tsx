@@ -3,32 +3,25 @@ import "./App.css";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { addGroup, addGroupValue } from "../../store/metrics";
-import { testData, testGroups } from "../../store/testData";
-import { markMetricsInitialized } from "../../store/init";
+import { addGroup, addGroupValue } from "../../store/metrics/metrics";
+import { markMetricsInitialized } from "../../store/init/init";
+import { useWebSocket } from "../../api/websocket";
+import { METRICS_API_URL } from "../../env";
+import { convertApiGroupDataToInternal } from "../../api/ApiGroupValue";
+import {
+    convertApiGroupSpecToInternal,
+    type ApiGroupSpec,
+} from "../../api/ApiGroupSpec";
+import { useAppSelector } from "../../store/store";
 
-function App() {
+function AppInner() {
     const location = useLocation();
-
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        for (const group of testGroups) {
-            dispatch(addGroup(group));
-        }
-        dispatch(markMetricsInitialized());
-        for (const data of testData()) {
-            dispatch(addGroupValue(data));
-        }
-    }, []);
-    useEffect(() => {
-        const interval = setInterval(() => {
-            for (const data of testData()) {
-                dispatch(addGroupValue(data));
-            }
-        }, 2000);
-        return () => clearInterval(interval);
-    }, []);
+    useWebSocket(`ws://${METRICS_API_URL}/api/metrics/ws`, (data: string) => {
+        const convertedData = convertApiGroupDataToInternal(JSON.parse(data));
+        dispatch(addGroupValue(convertedData));
+    });
 
     return (
         <div className="app">
@@ -54,6 +47,29 @@ function App() {
             </div>
         </div>
     );
+}
+
+function App() {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        (async () => {
+            const data: ApiGroupSpec[] = await (
+                await fetch(`http://${METRICS_API_URL}/api/metrics/discover`)
+            ).json();
+            for (const group of data) {
+                dispatch(addGroup(convertApiGroupSpecToInternal(group)));
+            }
+            dispatch(markMetricsInitialized());
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const metricsAreInitialized = useAppSelector(
+        (state) => state.init.metricsAreInitialized
+    );
+
+    return metricsAreInitialized ? <AppInner /> : <></>;
 }
 
 export default App;

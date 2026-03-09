@@ -1,20 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { GroupSpec, GroupState, Status } from "./GroupState";
-import { dropTimeSeriesData } from "../utils";
-import type { MetricState } from "./MetricState";
+import type { GroupSpec, GroupHistory, Status } from "./GroupHistory";
+import { dropTimeSeriesData } from "../../utils";
+import type { MetricHistory } from "./MetricHistory";
 
-export const MAX_HISTORY_SIZE = 10;
+export const MAX_HISTORY_SIZE = 100;
 
 export interface AddGroupValueData {
     groupId: string;
     date: Date;
     status: Status | null;
-    metricValues: Record<string, number[]>;
+    metricValues: Record<string, (string | number)[]>;
 }
 
 export const metricsSlice = createSlice({
     name: "metrics",
-    initialState: {} as Record<string, GroupState>,
+    initialState: {} as Record<string, GroupHistory>,
     reducers: {
         addGroupValue: (
             state,
@@ -31,6 +31,7 @@ export const metricsSlice = createSlice({
                 dropTimeSeriesData(group.statuses, MAX_HISTORY_SIZE);
             }
             for (const metricId in metricValues) {
+                console.log(metricId, metricValues)
                 if (!(metricId in group.metrics)) continue;
                 const metric = group.metrics[metricId];
                 metric.measurements.push({
@@ -48,7 +49,7 @@ export const metricsSlice = createSlice({
                 payload: GroupSpec;
             }
         ) => {
-            const metrics: Record<string, MetricState> = {};
+            const metrics: Record<string, MetricHistory> = {};
             for (const metricId in groupSpec.metrics) {
                 metrics[metricId] = {
                     ...groupSpec.metrics[metricId],

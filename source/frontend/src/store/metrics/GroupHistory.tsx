@@ -1,4 +1,4 @@
-import type { MetricSpec, MetricState } from "./MetricState";
+import type { MetricSpec, MetricHistory } from "./MetricHistory";
 
 export const enum Status {
     Ok = "ok",
@@ -18,10 +18,10 @@ export interface GroupSpec {
     metrics: Record<string, MetricSpec>;
 }
 
-export interface GroupState {
+export interface GroupHistory {
     id: string;
     subtitle: string | null;
     name: string;
     statuses: GroupStatusData[] | null;
-    metrics: Record<string, MetricState>;
+    metrics: Record<string, MetricHistory>;
 }

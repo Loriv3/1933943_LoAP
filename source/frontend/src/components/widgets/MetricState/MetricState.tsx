@@ -1,25 +1,34 @@
 import { Button, Card, Collapse, Nav } from "react-bootstrap";
-import { arrayLast, formatUnit, useTimer } from "../../utils";
+import { arrayLast, formatUnit, useTimer } from "../../../utils";
 import { useState } from "react";
-import type { MetricState } from "../../store/MetricState";
 import { visualizerTypes } from "./visualizerTypes";
-import { metricTypeIcons } from "../../metricTypeIcons";
+import { metricTypeIcons } from "../../../metricTypeIcons";
 import { NavLink } from "react-router";
+import { useDispatch } from "react-redux";
+import {
+    DashboardWidgetVariant,
+    type DashboardWidgetPath,
+} from "../../../store/dashboard/DashboardWidget";
+import { addWidget, removeWidget } from "../../../store/dashboard/dashboard";
+import { useAppSelector, useHasDashboardWidget } from "../../../store/store";
+import { WidgetLocation } from "../WidgetLocation";
 
-export function MetricStateVis({
-    metric,
-    isDetail,
-    ...props
-}:
-    | {
-          metric: MetricState;
-          isDetail: true;
-      }
-    | {
-          metric: MetricState;
-          groupId: string;
-          isDetail: false;
-      }) {
+export function MetricState({
+    metricId,
+    groupId,
+    location,
+}: {
+    metricId: string;
+    groupId: string;
+    location: WidgetLocation;
+}) {
+    const groupName = useAppSelector(
+        (state) => state.metrics[groupId].name
+    );
+    const metric = useAppSelector(
+        (state) => state.metrics[groupId].metrics[metricId]
+    );
+
     const [isOpen, setOpen] = useState(true);
     const Visualizer = visualizerTypes[metric.type];
     const value = arrayLast(metric.measurements)?.value;
@@ -31,11 +40,18 @@ export function MetricStateVis({
         : null;
     const secondsSinceLastUpdate = useTimer(lastUpdate);
 
+    const dispatch = useDispatch();
+    const dashboardWidget = {
+        variant: DashboardWidgetVariant.MetricState,
+        groupId: groupId,
+        metricId: metric.id,
+    } satisfies DashboardWidgetPath;
+    const hasDashboardWidget = useHasDashboardWidget(dashboardWidget);
     return (
         <Card>
             <Card.Header className="pe-0">
                 <Nav className="justify-content-evenly align-items-center me-2 ms-2">
-                    {isDetail ? (
+                    {location === WidgetLocation.MetricDetail ? (
                         <>
                             <Nav.Item>
                                 <h4 className="m-0">Current Value</h4>
@@ -55,13 +71,12 @@ export function MetricStateVis({
                             </Nav.Item>
                             <Nav.Item className="ms-3">
                                 <h4 className="m-0">
-                                    <b>{metric.name}</b>
+                                    <b>{location === WidgetLocation.GroupDetail ? metric.name : `${groupName} ${metric.name}`}</b>
                                 </h4>
                             </Nav.Item>
                             <Nav.Item className="flex-fill" />{" "}
                         </>
                     )}
-
                     {isOpen ? (
                         ""
                     ) : (
@@ -80,24 +95,35 @@ export function MetricStateVis({
                         </Nav.Item>
                     )}
                     <Nav.Item className="flex-fill" />
-                    {isDetail ? (
+                    <Nav.Item>
+                        <Button
+                            variant={hasDashboardWidget ? "danger" : "primary"}
+                            title={
+                                hasDashboardWidget
+                                    ? "Remove from Dashboard"
+                                    : "Add to Dashboard"
+                            }
+                            onClick={() => {
+                                dispatch(
+                                    hasDashboardWidget
+                                        ? removeWidget(dashboardWidget)
+                                        : addWidget(dashboardWidget)
+                                );
+                            }}
+                        >
+                            {hasDashboardWidget ? (
+                                <i className="fas fa-minus" />
+                            ) : (
+                                <i className="fas fa-plus" />
+                            )}
+                        </Button>
+                    </Nav.Item>
+                    {location === WidgetLocation.MetricDetail ? (
                         <></>
                     ) : (
                         <>
-                            <Nav.Item>
-                                <Button
-                                    variant="primary"
-                                    title="Add to Dashboard"
-                                >
-                                    <i className="fas fa-plus" />
-                                </Button>
-                            </Nav.Item>
                             <Nav.Item className="ms-2">
-                                <NavLink
-                                    to={`/groups/${
-                                        (props as { groupId: string }).groupId
-                                    }/${metric.id}`}
-                                >
+                                <NavLink to={`/groups/${groupId}/${metric.id}`}>
                                     <Button
                                         variant="secondary"
                                         title="Show Detail"
@@ -129,9 +155,11 @@ export function MetricStateVis({
                         {value ? (
                             <Visualizer value={value} unit={metric.unit} />
                         ) : (
-                            ""
+                            <h1 className="text-center">
+                                <b>No Value</b>
+                            </h1>
                         )}
-                        {isDetail ? (
+                        {location === WidgetLocation.MetricDetail ? (
                             <div className="text-center text-muted mt-3 mb-1">
                                 <small>
                                     Last updated:{" "}

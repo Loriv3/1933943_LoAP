@@ -1,12 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { metricsReducer } from "./metrics";
+import { metricsReducer } from "./metrics/metrics";
 import { useDispatch, useSelector } from "react-redux";
-import { initReducer } from "./init";
+import { initReducer } from "./init/init";
+import { dashboardReducer, dashboardWidgetId } from "./dashboard/dashboard";
+import type { DashboardWidgetPath } from "./dashboard/DashboardWidget";
 
 export const store = configureStore({
     reducer: {
         metrics: metricsReducer,
         init: initReducer,
+        dashboard: dashboardReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
@@ -23,3 +26,23 @@ export type AppDispatch = typeof store.dispatch;
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
+
+export const useHasDashboardWidget = (path: DashboardWidgetPath) =>
+    useAppSelector(
+        (state) => dashboardWidgetId(path) in state.dashboard.orderById
+    );
+
+export const useHasDashboardWidgets = (paths: DashboardWidgetPath[]) =>
+    useAppSelector(
+        (state) =>
+            paths.map(
+                (path) => dashboardWidgetId(path) in state.dashboard.orderById
+            ),
+        (a, b) => a.every((ae, i) => ae === b[i])
+    );
+
+export const useDashboardWidgets = () =>
+    useAppSelector((state) => state.dashboard.orderById);
+
+export const useDashboardWidgetsOrdered = () =>
+    useAppSelector((state) => state.dashboard.pathsByOrder);

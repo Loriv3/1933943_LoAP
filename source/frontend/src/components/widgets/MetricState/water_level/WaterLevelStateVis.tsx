@@ -1,5 +1,5 @@
-import type { MetricUnit } from "../../../store/MetricState";
-import { formatUnit, type CSSProperties } from "../../../utils";
+import type { MetricUnit } from "../../../../store/metrics/MetricHistory";
+import { formatUnit, type CSSProperties } from "../../../../utils";
 import "./WaterLevelStateVis.css";
 
 function WaterLevelScale({
@@ -18,7 +18,7 @@ function WaterLevelScale({
     return (
         <div
             className="water-level"
-            style={{ fontSize: `${size}em`, "--value": valuePercent } as CSSProperties}
+            style={{ fontSize: `${size}em`, "--value": valuePercent / 100 } as CSSProperties}
         >
             <div className="water-level-fill">
                 <svg viewBox="0 0 1 5" preserveAspectRatio="none">
@@ -60,7 +60,7 @@ function WaterLevelScale({
                         {formatUnit(valuePercent, unitPercent)}
                     </div>
                     <div className="water-level-value-liters">
-                        {formatUnit(valuePercent, unitLiters)}
+                        {formatUnit(valueLiters, unitLiters)}
                     </div>
                 </div>
             )}
@@ -79,10 +79,10 @@ export function WaterLevelStateVis({
     return (
         <div className="d-flex justify-content-center">
             <WaterLevelScale
-                valuePercent={valuePercent}
-                valueLiters={valueLiters}
-                unitPercent={unitPercent}
-                unitLiters={unitLiters}
+                valuePercent={unitPercent === "%" ? valuePercent : valueLiters}
+                valueLiters={unitPercent === "%" ? valueLiters : valuePercent}
+                unitPercent={unitPercent === "%" ? unitPercent : unitLiters}
+                unitLiters={unitPercent === "%" ? unitLiters : unitPercent}
                 size={size}
             />
         </div>

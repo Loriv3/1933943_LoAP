@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MetricType, type MetricUnit } from "../../store/MetricState";
+import { MetricType, type MetricUnit } from "../../../store/metrics/MetricHistory";
 import { HumidityStateVis } from "./humidity/HumidityStateVis";
 import { PhStateVis } from "./ph/PhStateVis";
 import { PressureStateVis } from "./pressure/PressureStateVis";
@@ -8,7 +8,7 @@ import { WaterLevelStateVis } from "./water_level/WaterLevelStateVis";
 
 export const visualizerTypes: {
     [key: string]: React.FC<{
-        value: number[];
+        value: (string | number)[];
         unit: MetricUnit[];
     }>;
 } = {
@@ -20,6 +20,7 @@ export const visualizerTypes: {
     [MetricType.Temperature]: TemperatureStateVis as any,
     [MetricType.Humidity]: HumidityStateVis as any,
     [MetricType.Pressure]: PressureStateVis as any,
+    [MetricType.Oxygen]: PressureStateVis as any,
     [MetricType.CyclesPerHour]: HumidityStateVis as any,
     [MetricType.Radiation]: HumidityStateVis as any,
     [MetricType.Power]: HumidityStateVis as any,
@@ -27,4 +28,5 @@ export const visualizerTypes: {
     [MetricType.Voltage]: HumidityStateVis as any,
     [MetricType.Current]: HumidityStateVis as any,
     [MetricType.Flow]: HumidityStateVis as any,
+    [MetricType.AirlockState]: HumidityStateVis as any,
 };

@@ -1,4 +1,5 @@
-import type { CSSProperties } from "../../../utils";
+import type { MetricUnit } from "../../../../store/metrics/MetricHistory";
+import { formatUnit, type CSSProperties } from "../../../../utils";
 import "./PressureStateVis.css";
 
 function Speedometer({
@@ -8,12 +9,13 @@ function Speedometer({
     size,
     trackColor = "#e0e0e0",
     colorSteps = [
-        ["#4579e2", 0],
+        ["#612286", 0],
+        ["#4579e2", 0.25],
         ["#00c000", 0.5],
         ["#e0c000", 0.75],
         ["#e04040", 1],
     ],
-    unit = null,
+    unit,
 }: {
     start: number;
     end: number;
@@ -21,7 +23,7 @@ function Speedometer({
     size: number;
     trackColor?: string;
     colorSteps?: [string, number][];
-    unit?: string | null;
+    unit: MetricUnit;
 }) {
     const valueRatio = (value - start) / (end - start);
     let startColor, startColorValue, endColor, endColorValue;
@@ -32,6 +34,9 @@ function Speedometer({
             break;
         }
     }
+
+    const valueFormatted = formatUnit(value, unit).split(" ", 2);
+
     return (
         <div
             className="speedometer"
@@ -53,34 +58,38 @@ function Speedometer({
                 <div className="speedometer-score" />
             </div>
             <div className="speedometer-notch" />
-            {unit ? (
-                <div className="speedometer-value">
-                    <span className="speedometer-value-value">{value}</span>
-                    <br />
-                    <span className="speedometer-value-unit">{unit}</span>
-                </div>
-            ) : (
-                ""
-            )}
+            <div className="speedometer-value">
+                <span className="speedometer-value-value">
+                    {valueFormatted[0]}
+                </span>
+                <br />
+                <span className="speedometer-value-unit">
+                    {valueFormatted[1]}
+                </span>
+            </div>
         </div>
     );
 }
 
 export function PressureStateVis({
     value: [value],
+    unit: [unit],
 }: {
     value: [number];
+    unit: [MetricUnit];
 }) {
-    const start = 97600;
-    const end = 105000;
+    const start = 93.3;
+    const end = 109.3;
     const size = 12;
     return (
-        <Speedometer
-            start={start / 100}
-            end={end / 100}
-            value={Math.round(value) / 100}
-            size={size}
-            unit="hPa"
-        />
+        <div className="d-flex justify-content-center">
+            <Speedometer
+                start={start}
+                end={end}
+                value={value}
+                size={size}
+                unit={unit}
+            />
+        </div>
     );
 }

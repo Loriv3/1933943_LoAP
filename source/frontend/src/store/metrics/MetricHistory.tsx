@@ -1,19 +1,21 @@
 export const enum MetricType {
-    Ph = "ph",
+    Ph = "chemistry.ph",
     AQParticleVolumeConcentration = "air_quality.particle_volume_concentration",
     AQVolumeVolumeConcentration = "air_quality.volume_volume_concentration",
     AQMassVolumeConcentration = "air_quality.mass_volume_concentration",
-    WaterLevel = "water_level",
-    Temperature = "temperature",
-    Humidity = "humidity",
-    Pressure = "pressure",
-    CyclesPerHour = "cycles_per_hour",
-    Radiation = "radiation",
+    WaterLevel = "water.level",
+    Temperature = "thermal.temperature",
+    Humidity = "environment.humidity",
+    Pressure = "environment.pressure",
+    Oxygen = "environment.oxygen",
+    CyclesPerHour = "airlock.cycles_per_hour",
+    Radiation = "environment.radiation",
     Power = "power.power",
     CumulativePower = "power.cumulative_power",
     Voltage = "power.voltage",
     Current = "power.current",
-    Flow = "flow",
+    Flow = "thermal.flow",
+    AirlockState = "airlock.state",
 }
 
 export type MetricUnit =
@@ -21,20 +23,21 @@ export type MetricUnit =
     | "ppm"
     | "ppb"
     | "%"
-    | "g/m3"
+    | "ug/m3"
     | "L"
     | "C"
-    | "Pa"
-    | "h^-1"
-    | "Sv/h"
-    | "W"
-    | "Wh"
+    | "kPa"
+    | "cyc/h"
+    | "uSv/h"
+    | "kW"
+    | "kWh"
     | "V"
     | "A"
-    | "L/min";
+    | "L/min"
+    | "";
 
 export interface MetricData {
-    value: number[];
+    value: (string | number)[];
     timestamp: number;
 }
 
@@ -45,6 +48,6 @@ export interface MetricSpec {
     unit: MetricUnit[];
 }
 
-export interface MetricState extends MetricSpec {
+export interface MetricHistory extends MetricSpec {
     measurements: MetricData[];
 }

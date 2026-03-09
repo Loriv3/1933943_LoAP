@@ -3,7 +3,7 @@ import "./MetricHistoryVis.css";
 import { Chart as ChartJS, type ChartOptions } from "chart.js";
 import { useCallback, useEffect, useRef } from "react";
 import { binaryGradient, formatUnit, multiStopGradient } from "../../utils";
-import { MetricType, type MetricUnit } from "../../store/MetricState";
+import { MetricType, type MetricUnit } from "../../store/metrics/MetricHistory";
 
 const chartOptions = (unit: MetricUnit[]) =>
     ({
@@ -40,7 +40,7 @@ const chartOptions = (unit: MetricUnit[]) =>
         },
     } satisfies ChartOptions<"line">);
 
-export type Data = { value: number[]; timestamp: number }[];
+export type Data = { value: (number | string)[]; timestamp: number }[];
 
 const phGradient = multiStopGradient([
     "#ee372280",
@@ -78,6 +78,7 @@ const borderColorByType = {
     [MetricType.Temperature]: tempGradient,
     [MetricType.Humidity]: phGradient,
     [MetricType.Pressure]: phGradient,
+    [MetricType.Oxygen]: phGradient,
     [MetricType.CyclesPerHour]: phGradient,
     [MetricType.Radiation]: phGradient,
     [MetricType.Power]: phGradient,
@@ -85,6 +86,7 @@ const borderColorByType = {
     [MetricType.Voltage]: phGradient,
     [MetricType.Current]: phGradient,
     [MetricType.Flow]: phGradient,
+    [MetricType.AirlockState]: phGradient,
 };
 const backgroundColorByType = {
     [MetricType.Ph]: phGradient,
@@ -95,6 +97,7 @@ const backgroundColorByType = {
     [MetricType.Temperature]: tempGradient,
     [MetricType.Humidity]: phGradient,
     [MetricType.Pressure]: phGradient,
+    [MetricType.Oxygen]: phGradient,
     [MetricType.CyclesPerHour]: phGradient,
     [MetricType.Radiation]: phGradient,
     [MetricType.Power]: phGradient,
@@ -102,6 +105,7 @@ const backgroundColorByType = {
     [MetricType.Voltage]: phGradient,
     [MetricType.Current]: phGradient,
     [MetricType.Flow]: phGradient,
+    [MetricType.AirlockState]: phGradient,
 };
 
 export function MetricHistoryVis({
@@ -119,7 +123,7 @@ export function MetricHistoryVis({
     }
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const chartRef = useRef<ChartJS<"line", number[], Date> | null>(null);
+    const chartRef = useRef<ChartJS<"line", (number | string)[], Date> | null>(null);
 
     const destroyChart = () => {
         if (!chartRef.current) return;

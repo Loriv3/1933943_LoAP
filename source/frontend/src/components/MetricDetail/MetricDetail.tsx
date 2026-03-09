@@ -1,22 +1,12 @@
 import { NavLink, useParams } from "react-router";
-import {
-    Button,
-    ButtonToolbar,
-    Card,
-    Col,
-    Collapse,
-    Container,
-    Nav,
-    Row,
-} from "react-bootstrap";
+import { Button, ButtonToolbar, Col, Container, Row } from "react-bootstrap";
 import { arrayLast } from "../../utils";
-import { useState } from "react";
 import { useAppSelector } from "../../store/store";
 import { wrapMetricsInitialized } from "../../utils/wrapMetricsInitialized";
-import { Status } from "../../store/GroupState";
-import { MetricHistoryVis } from "../HistoryVis/MetricHistoryVis";
-import { MetricStateVis } from "../MetricStateVis/MetricStateVis";
-import type { MetricState } from "../../store/MetricState";
+import { Status } from "../../store/metrics/GroupHistory";
+import { WidgetLocation } from "../widgets/WidgetLocation";
+import { MetricState } from "../widgets/MetricState/MetricState";
+import { MetricStateHistory } from "../widgets/MetricStateHistory/MetricStateHistory";
 
 const statusClasses: Record<Status, string> = {
     [Status.Ok]: "success",
@@ -24,48 +14,6 @@ const statusClasses: Record<Status, string> = {
 };
 const statusClass = (prefix: string, status: Status | null) =>
     status ? prefix + statusClasses[status] : "";
-
-function MetricDetailHistory({ metric }: { metric: MetricState }) {
-    const [isOpen, setOpen] = useState(true);
-
-    return (
-        <Card>
-            <Card.Header className="pe-0">
-                <Nav className="align-items-center me-2 ms-2">
-                    <Nav.Item className="me-auto">
-                        <h4 className="m-0">History</h4>
-                    </Nav.Item>
-                    <Nav.Item className="ms-2 me-1">
-                        <Button
-                            variant="outline-secondary"
-                            title={isOpen ? "Collapse" : "Show"}
-                            data-bs-toggle="collapse"
-                            data-bs-target={`#card-body-${metric.id}`}
-                            onClick={() => setOpen(!isOpen)}
-                        >
-                            <i
-                                className={`fas fa-chevron-${
-                                    isOpen ? "up" : "down"
-                                }`}
-                            />
-                        </Button>
-                    </Nav.Item>
-                </Nav>
-            </Card.Header>
-            <Collapse in={isOpen}>
-                <div>
-                    <Card.Body>
-                        <MetricHistoryVis
-                            data={metric.measurements}
-                            type={metric.type}
-                            unit={metric.unit}
-                        />
-                    </Card.Body>
-                </div>
-            </Collapse>
-        </Card>
-    );
-}
 
 export const MetricDetail = wrapMetricsInitialized(() => {
     const { groupId, metricId } =
@@ -80,7 +28,7 @@ export const MetricDetail = wrapMetricsInitialized(() => {
     );
 
     return (
-        <Container fluid className="my-3">
+        <Container className="my-3">
             <Row className="g-3">
                 <Col
                     xs={12}
@@ -120,10 +68,6 @@ export const MetricDetail = wrapMetricsInitialized(() => {
                     </div>
                     <ButtonToolbar className="justify-content-center mb-3 gap-2">
                         <Button>
-                            <i className="fas fa-plus" />
-                            <span className="ms-2 me-1">Add to Dashboard</span>
-                        </Button>
-                        <Button>
                             <i className="fas fa-file-circle-plus" />
                             <span className="ms-2 me-1">
                                 Create Automation Rule
@@ -132,10 +76,18 @@ export const MetricDetail = wrapMetricsInitialized(() => {
                     </ButtonToolbar>
                 </Col>
                 <Col xs={12} lg={6}>
-                    <MetricStateVis metric={metric} isDetail={true} />
+                    <MetricState
+                        metricId={metricId!}
+                        groupId={groupId!}
+                        location={WidgetLocation.MetricDetail}
+                    />
                 </Col>
                 <Col xs={12}>
-                    <MetricDetailHistory metric={metric} />
+                    <MetricStateHistory
+                        metricId={metricId!}
+                        groupId={groupId!}
+                        location={WidgetLocation.MetricDetail}
+                    />
                 </Col>
             </Row>
         </Container>
