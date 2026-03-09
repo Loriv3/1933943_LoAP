@@ -9,7 +9,7 @@ const chartOptions = {
     maintainAspectRatio: false,
     scales: {
         x: {
-            type: "timeseries",
+            type: "time",
             time: {
                 unit: "hour",
                 displayFormats: {
@@ -19,6 +19,10 @@ const chartOptions = {
         },
         y: {
             type: "category",
+            labels: ["Off", "On"],
+            min: "Off",
+            max: "On",
+            reverse: true,
         },
     },
     plugins: {
@@ -31,11 +35,11 @@ const chartOptions = {
     },
 } satisfies ChartOptions<"line">;
 
-export type Data = { value: boolean; timestamp: number }[];
+export type Data = { value: boolean | null; timestamp: number }[];
 
 const toggleColors = ["#ff550780", "#19875480"];
 
-type Point = { x: Date; y: boolean };
+type Point = [number, string];
 
 const gradient = binaryGradient({
     startColor: toggleColors[0],
@@ -47,11 +51,13 @@ const transformData = (data: Data) => {
     const result: Point[] = [];
     for (let i = 0; i < data.length; i++) {
         const { value, timestamp } = data[i];
-        result.push({ x: new Date(timestamp), y: value });
-        if (i < data.length - 1) {
-            result.push({ x: new Date(data[i + 1].timestamp), y: value });
-        }
+        if (value === null) continue;
+        result.push([timestamp, value ? "On" : "Off"]);
     }
+    if (result.length === 1) {
+        result.push(result[0]);
+    }
+    console.log(result);
     return result;
 };
 
@@ -71,17 +77,16 @@ export function ToggleHistoryVis({ data }: { data: Data }) {
 
     const renderChart = useCallback(() => {
         if (!canvasRef.current) return;
+        const transformedData = transformData(data);
         chartRef.current = new ChartJS(canvasRef.current, {
             type: "line",
             data: {
-                labels: ["On", "Off"],
                 datasets: [
                     {
-                        data: transformData(data),
+                        data: transformedData,
                         borderColor: gradient,
                         backgroundColor: gradient,
                         fill: true,
-                        cubicInterpolationMode: "monotone",
                     },
                 ],
             },
@@ -104,7 +109,7 @@ export function ToggleHistoryVis({ data }: { data: Data }) {
                 );
                 j++
             ) {
-                if (currentData.current![i + j].x !== transformedData[j].x) {
+                if (currentData.current![i + j][0] !== transformedData[j][0]) {
                     break;
                 }
             }
@@ -127,7 +132,7 @@ export function ToggleHistoryVis({ data }: { data: Data }) {
         }
         currentData.current = transformedData;
         chartRef.current.options.scales!.x!.min = Math.min(
-            ...transformedData.map(({ x }) => x.getTime())
+            ...transformedData.map(([x]) => x)
         );
         if (chartRef.current.canvas !== canvasRef.current) {
             destroyChart();

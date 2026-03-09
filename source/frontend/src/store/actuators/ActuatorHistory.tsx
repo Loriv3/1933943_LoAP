@@ -1,5 +1,5 @@
 export interface ActuatorData {
-    value: boolean;
+    value: boolean | null;
     timestamp: number;
 }
 

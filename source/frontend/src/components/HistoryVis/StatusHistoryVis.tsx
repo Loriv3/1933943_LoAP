@@ -3,14 +3,14 @@ import "./StatusHistoryVis.css";
 import { Chart as ChartJS, type ChartOptions } from "chart.js";
 import { useCallback, useEffect, useRef } from "react";
 import { Status } from "../../store/metrics/GroupHistory";
-import { binaryGradient, capitalize } from "../../utils";
+import { binaryGradient } from "../../utils";
 
 const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
         x: {
-            type: "timeseries",
+            type: "time",
             time: {
                 unit: "hour",
                 displayFormats: {
@@ -20,9 +20,9 @@ const chartOptions = {
         },
         y: {
             type: "category",
-            ticks: {
-                callback: (value) => ["Warning", "Ok"][value as number],
-            },
+            labels: ["Warning", "Ok"],
+            min: "Warning",
+            max: "Ok",
         },
     },
     plugins: {
@@ -31,9 +31,6 @@ const chartOptions = {
         },
         tooltip: {
             intersect: false,
-            callbacks: {
-                label: (value) => capitalize((value.raw as Point).y),
-            },
         },
     },
 } satisfies ChartOptions<"line">;
@@ -45,7 +42,7 @@ const statusColors = {
     [Status.Warning]: "#19875480",
 };
 
-type Point = { x: Date; y: Status };
+type Point = [number, string];
 
 const gradient = binaryGradient({
     startColor: statusColors[Status.Warning],
@@ -53,10 +50,24 @@ const gradient = binaryGradient({
     endColor: statusColors[Status.Ok],
 });
 
+const transformData = (data: Data) => {
+    const result: Point[] = [];
+    for (let i = 0; i < data.length; i++) {
+        const { value, timestamp } = data[i];
+        if (value === null) continue;
+        result.push([timestamp, value === Status.Warning ? "Warning" : "Ok"]);
+    }
+    if (result.length === 1) {
+        result.push(result[0]);
+    }
+    console.log(result);
+    return result;
+};
+
 export function StatusHistoryVis({ data }: { data: Data }) {
-    const currentData = useRef<Data | null>(null);
+    const currentData = useRef<Point[] | null>(null);
     if (currentData.current === null) {
-        currentData.current = data;
+        currentData.current = transformData(data);
     }
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -69,16 +80,13 @@ export function StatusHistoryVis({ data }: { data: Data }) {
 
     const renderChart = useCallback(() => {
         if (!canvasRef.current) return;
+        const transformedData = transformData(data);
         chartRef.current = new ChartJS(canvasRef.current, {
             type: "line",
             data: {
-                labels: ["warning", "ok"],
                 datasets: [
                     {
-                        data: data.map(({ value, timestamp }) => ({
-                            x: new Date(timestamp),
-                            y: value,
-                        })),
+                        data: transformedData,
                         borderColor: gradient,
                         backgroundColor: gradient,
                         fill: true,
@@ -92,17 +100,20 @@ export function StatusHistoryVis({ data }: { data: Data }) {
 
     useEffect(() => {
         if (!chartRef.current) return;
+        const transformedData = transformData(data);
         let maxMatch = null;
         for (let i = 0; i < currentData.current!.length; i++) {
             let j = 0;
             for (
                 ;
-                j < Math.min(data.length, currentData.current!.length - i);
+                j <
+                Math.min(
+                    transformedData.length,
+                    currentData.current!.length - i
+                );
                 j++
             ) {
-                if (
-                    currentData.current![i + j].timestamp !== data[j].timestamp
-                ) {
+                if (currentData.current![i + j][0] !== transformedData[j][0]) {
                     break;
                 }
             }
@@ -118,19 +129,14 @@ export function StatusHistoryVis({ data }: { data: Data }) {
             // Add labels to the end instead of resetting the data
             chartRef.current.data.datasets[0].data!.splice(0, maxMatch[0]);
             chartRef.current.data.datasets[0].data.push(
-                ...data.slice(maxMatch[1]).map(({ timestamp, value }) => ({
-                    x: new Date(timestamp),
-                    y: value,
-                }))
+                ...transformedData.slice(maxMatch[1])
             );
         } else {
-            chartRef.current.data.datasets[0].data = data.map(
-                ({ timestamp, value }) => ({ x: new Date(timestamp), y: value })
-            );
+            chartRef.current.data.datasets[0].data = transformedData;
         }
-        currentData.current = data;
+        currentData.current = transformedData;
         chartRef.current.options.scales!.x!.min = Math.min(
-            ...data.map(({ timestamp }) => timestamp)
+            ...transformedData.map(([x]) => x)
         );
         if (chartRef.current.canvas !== canvasRef.current) {
             destroyChart();

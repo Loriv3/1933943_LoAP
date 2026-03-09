@@ -173,7 +173,7 @@ export function formatUnit(value: string | number, unit: MetricUnit) {
         case "L":
             return `${(value as number).toFixed(2)} L`;
         case "C":
-            return `${(value as number).toFixed(1)} C`;
+            return `${(value as number).toFixed(1)} °C`;
         case "kPa":
             return `${((value as number) * 10).toFixed(2)} hPa`;
         case "cyc/h":
@@ -191,10 +191,7 @@ export function formatUnit(value: string | number, unit: MetricUnit) {
         case "L/min":
             return `${(value as number).toFixed(2)} L/min`;
         case "":
-            return (
-                (value as string)[0].toLocaleUpperCase() +
-                (value as string).slice(1).toLocaleLowerCase()
-            );
+            return capitalize(value as string);
     }
 }
 
@@ -206,4 +203,4 @@ export const statusToBootstrapColor = {
 export const capitalize = (value: string) => {
     console.log(value);
     return value.charAt(0).toLocaleUpperCase() + value.slice(1);
-}
+};

@@ -11,7 +11,7 @@ const chartOptions = (unit: MetricUnit[]) =>
         maintainAspectRatio: false,
         scales: {
             x: {
-                type: "timeseries",
+                type: "time",
                 time: {
                     unit: "hour",
                     displayFormats: {
@@ -108,6 +108,21 @@ const backgroundColorByType = {
     [MetricType.AirlockState]: phGradient,
 };
 
+type Point = [number, string | number];
+
+const transformData = (data: Data) => {
+    const result: Point[] = [];
+    for (let i = 0; i < data.length; i++) {
+        const { value, timestamp } = data[i];
+        result.push([timestamp, value[0]]);
+    }
+    if (result.length === 1) {
+        result.push(result[0]);
+    }
+    console.log(result);
+    return result;
+};
+
 export function MetricHistoryVis({
     data,
     type,
@@ -117,13 +132,13 @@ export function MetricHistoryVis({
     type: MetricType;
     unit: MetricUnit[];
 }) {
-    const currentData = useRef<Data | null>(null);
+    const currentData = useRef<Point[] | null>(null);
     if (currentData.current === null) {
-        currentData.current = data;
+        currentData.current = transformData(data);
     }
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const chartRef = useRef<ChartJS<"line", (number | string)[], Date> | null>(null);
+    const chartRef = useRef<ChartJS<"line", Point[], string> | null>(null);
 
     const destroyChart = () => {
         if (!chartRef.current) return;
@@ -132,13 +147,13 @@ export function MetricHistoryVis({
 
     const renderChart = useCallback(() => {
         if (!canvasRef.current) return;
+        const transformedData = transformData(data);
         chartRef.current = new ChartJS(canvasRef.current, {
             type: "line",
             data: {
-                labels: data.map(({ timestamp }) => new Date(timestamp)),
                 datasets: [
                     {
-                        data: data.map(({ value }) => value[0]),
+                        data: transformedData,
                         borderColor: borderColorByType[type],
                         backgroundColor: backgroundColorByType[type],
                         fill: true,
@@ -152,17 +167,20 @@ export function MetricHistoryVis({
 
     useEffect(() => {
         if (!chartRef.current) return;
+        const transformedData = transformData(data);
         let maxMatch = null;
         for (let i = 0; i < currentData.current!.length; i++) {
             let j = 0;
             for (
                 ;
-                j < Math.min(data.length, currentData.current!.length - i);
+                j <
+                Math.min(
+                    transformedData.length,
+                    currentData.current!.length - i
+                );
                 j++
             ) {
-                if (
-                    currentData.current![i + j].timestamp !== data[j].timestamp
-                ) {
+                if (currentData.current![i + j][0] !== transformedData[j][0]) {
                     break;
                 }
             }
@@ -176,25 +194,14 @@ export function MetricHistoryVis({
             currentData.current!.length >= 10
         ) {
             // Add labels to the end instead of resetting the data
-            chartRef.current.data.labels!.splice(0, maxMatch[0]);
-            chartRef.current.data.labels!.push(
-                ...data
-                    .slice(maxMatch[1])
-                    .map(({ timestamp }) => new Date(timestamp))
-            );
             chartRef.current.data.datasets[0].data!.splice(0, maxMatch[0]);
             chartRef.current.data.datasets[0].data.push(
-                ...data.slice(maxMatch[1]).map(({ value }) => value[0])
+                ...transformedData.slice(maxMatch[1])
             );
         } else {
-            chartRef.current.data.labels! = data.map(
-                ({ timestamp }) => new Date(timestamp)
-            );
-            chartRef.current.data.datasets[0].data = data.map(
-                ({ value }) => value[0]
-            );
+            chartRef.current.data.datasets[0].data = transformedData;
         }
-        currentData.current = data;
+        currentData.current = transformedData;
         if (chartRef.current.canvas !== canvasRef.current) {
             destroyChart();
             renderChart();
