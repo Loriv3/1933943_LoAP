@@ -91,7 +91,9 @@ export const GroupList = wrapMetricsInitialized(() => {
                                             </Button>
                                         </Nav.Item>
                                         <Nav.Item className="ms-1">
-                                            <NavLink to={`/groups/${group.id}`}>
+                                            <NavLink
+                                                to={`/metrics/${group.id}`}
+                                            >
                                                 <Button
                                                     variant="secondary"
                                                     title="Show Detail"
@@ -138,38 +140,31 @@ export const GroupList = wrapMetricsInitialized(() => {
                                                             </h6>
                                                         </Nav.Item>
                                                         <Nav.Item className="mx-4 text-muted">
-                                                            {
-                                                                (console.log(
-                                                                    metric.name,
-                                                                    metric.measurements
-                                                                ),
-                                                                metric
-                                                                    .measurements
-                                                                    .length
-                                                                    ? `${metric.measurements[
-                                                                          metric
-                                                                              .measurements
-                                                                              .length -
-                                                                              1
-                                                                      ].value
-                                                                          .map(
-                                                                              (
+                                                            {metric.measurements
+                                                                .length
+                                                                ? `${metric.measurements[
+                                                                      metric
+                                                                          .measurements
+                                                                          .length -
+                                                                          1
+                                                                  ].value
+                                                                      .map(
+                                                                          (
+                                                                              v,
+                                                                              i
+                                                                          ) =>
+                                                                              formatUnit(
                                                                                   v,
-                                                                                  i
-                                                                              ) =>
-                                                                                  formatUnit(
-                                                                                      v,
-                                                                                      metric
-                                                                                          .unit[
-                                                                                          i
-                                                                                      ]
-                                                                                  )
-                                                                          )
-                                                                          .join(
-                                                                              ", "
-                                                                          )}`
-                                                                    : "")
-                                                            }
+                                                                                  metric
+                                                                                      .unit[
+                                                                                      i
+                                                                                  ]
+                                                                              )
+                                                                      )
+                                                                      .join(
+                                                                          ", "
+                                                                      )}`
+                                                                : ""}
                                                         </Nav.Item>
                                                         <Nav.Item className="ms-2">
                                                             <Button
@@ -193,7 +188,7 @@ export const GroupList = wrapMetricsInitialized(() => {
                                                         </Nav.Item>
                                                         <Nav.Item className="ms-2">
                                                             <NavLink
-                                                                to={`/groups/${group.id}/${metric.id}`}
+                                                                to={`/metrics/${group.id}/${metric.id}`}
                                                             >
                                                                 <Button
                                                                     variant="outline-secondary"

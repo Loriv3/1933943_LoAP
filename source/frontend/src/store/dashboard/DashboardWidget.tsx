@@ -3,6 +3,8 @@ export const enum DashboardWidgetVariant {
     GroupStatusHistory,
     MetricState,
     MetricStateHistory,
+    ActuatorToggle,
+    ActuatorHistory,
 }
 
 export interface DashboardGroupStatusWidgetPath {
@@ -27,8 +29,20 @@ export interface DashboardMetricStateHistoryWidgetPath {
     metricId: string;
 }
 
+export interface DashboardActuatorToggleWidgetPath {
+    variant: DashboardWidgetVariant.ActuatorToggle;
+    actuatorId: string;
+}
+
+export interface DashboardActuatorHistoryWidgetPath {
+    variant: DashboardWidgetVariant.ActuatorHistory;
+    actuatorId: string;
+}
+
 export type DashboardWidgetPath =
     | DashboardGroupStatusWidgetPath
     | DashboardGroupStatusHistoryWidgetPath
     | DashboardMetricStateWidgetPath
-    | DashboardMetricStateHistoryWidgetPath;
+    | DashboardMetricStateHistoryWidgetPath
+    | DashboardActuatorToggleWidgetPath
+    | DashboardActuatorHistoryWidgetPath;

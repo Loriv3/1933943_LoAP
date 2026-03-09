@@ -27,11 +27,13 @@ export const metricsSlice = createSlice({
             if (!(groupId in state)) return;
             const group = state[groupId];
             if (status !== null && group.statuses) {
-                group.statuses.push({ value: status, timestamp: date.getTime() });
+                group.statuses.push({
+                    value: status,
+                    timestamp: date.getTime(),
+                });
                 dropTimeSeriesData(group.statuses, MAX_HISTORY_SIZE);
             }
             for (const metricId in metricValues) {
-                console.log(metricId, metricValues)
                 if (!(metricId in group.metrics)) continue;
                 const metric = group.metrics[metricId];
                 metric.measurements.push({

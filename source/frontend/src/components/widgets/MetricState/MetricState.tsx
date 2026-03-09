@@ -123,7 +123,7 @@ export function MetricState({
                     ) : (
                         <>
                             <Nav.Item className="ms-2">
-                                <NavLink to={`/groups/${groupId}/${metric.id}`}>
+                                <NavLink to={`/metrics/${groupId}/${metric.id}`}>
                                     <Button
                                         variant="secondary"
                                         title="Show Detail"

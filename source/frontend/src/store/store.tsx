@@ -4,17 +4,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { initReducer } from "./init/init";
 import { dashboardReducer, dashboardWidgetId } from "./dashboard/dashboard";
 import type { DashboardWidgetPath } from "./dashboard/DashboardWidget";
+import { actuatorsReducer } from "./actuators/actuators";
 
 export const store = configureStore({
     reducer: {
         metrics: metricsReducer,
+        actuators: actuatorsReducer,
         init: initReducer,
         dashboard: dashboardReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                ignoredActions: ["metrics/addGroupValue"],
+                ignoredActions: ["metrics/addGroupValue", "actuators/addActuatorValue"],
             },
         }),
 });

@@ -11,9 +11,13 @@ export const dashboardWidgetId = (path: DashboardWidgetPath) => {
         case DashboardWidgetVariant.GroupStatusHistory:
             return `${path.groupId}.status-history`;
         case DashboardWidgetVariant.MetricState:
-            return `${path.groupId}.${path.metricId}.status`;
+            return `${path.groupId}.${path.metricId}.state`;
         case DashboardWidgetVariant.MetricStateHistory:
-            return `${path.groupId}.${path.metricId}.status-history`;
+            return `${path.groupId}.${path.metricId}.state-history`;
+        case DashboardWidgetVariant.ActuatorToggle:
+            return `${path.actuatorId}.state`;
+        case DashboardWidgetVariant.ActuatorHistory:
+            return `${path.actuatorId}.state-history`;
     }
 };
 

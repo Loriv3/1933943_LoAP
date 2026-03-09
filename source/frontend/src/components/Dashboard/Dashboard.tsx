@@ -10,6 +10,7 @@ import { GroupStatusHistory } from "../widgets/GroupStatusHistory/GroupStatusHis
 import { WidgetLocation } from "../widgets/WidgetLocation";
 import { MetricState } from "../widgets/MetricState/MetricState";
 import { MetricStateHistory } from "../widgets/MetricStateHistory/MetricStateHistory";
+import { NavLink } from "react-router";
 
 function widgetToVis(widget: DashboardWidgetPath) {
     switch (widget.variant) {
@@ -47,6 +48,8 @@ function widgetToVis(widget: DashboardWidgetPath) {
                     location={WidgetLocation.Dashboard}
                 />
             );
+        case DashboardWidgetVariant.ActuatorToggle:
+        case DashboardWidgetVariant.ActuatorHistory:
     }
 }
 
@@ -56,11 +59,36 @@ export function Dashboard() {
     return (
         <Container className="my-3">
             <Row className="g-3">
-                {dashboardWidgets.map((widget) => (
-                    <Col xs={12} xl={6}>
-                        {widgetToVis(widget)}
-                    </Col>
-                ))}
+                {dashboardWidgets.length ? (
+                    dashboardWidgets.map((widget) => (
+                        <Col xs={12} xl={6}>
+                            {widgetToVis(widget)}
+                        </Col>
+                    ))
+                ) : (
+                    <div className="text-center py-3">
+                        <h1 className="mb-3">
+                            <b>The dashboard is currently empty...</b>
+                        </h1>
+                        <h3 className="text-muted">
+                            Go to{" "}
+                            <NavLink
+                                to="/metrics"
+                                className="text-decoration-none"
+                            >
+                                Metrics
+                            </NavLink>{" "}
+                            or{" "}
+                            <NavLink
+                                to="actuators"
+                                className="text-decoration-none"
+                            >
+                                Actuators
+                            </NavLink>{" "}
+                            to add widgets!
+                        </h3>
+                    </div>
+                )}
             </Row>
         </Container>
     );

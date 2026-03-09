@@ -1,3 +1,5 @@
+import "./GroupStatus.css";
+
 import { useState } from "react";
 import { Status } from "../../../store/metrics/GroupHistory";
 import { arrayLast, statusToBootstrapColor, useTimer } from "../../../utils";
@@ -100,7 +102,7 @@ export function GroupStatus({
                     ) : (
                         <>
                             <Nav.Item className="ms-2">
-                                <NavLink to={`/groups/${groupId}`}>
+                                <NavLink to={`/metrics/${groupId}`}>
                                     <Button
                                         variant="secondary"
                                         title="Show Detail"
@@ -130,10 +132,10 @@ export function GroupStatus({
                 <div>
                     <Card.Body>
                         <div
-                            className={`d-flex flex-column align-items-center justify-content-center group-detail-status-${value}`}
+                            className={`d-flex flex-column align-items-center justify-content-center text-${statusColor}`}
                         >
                             <i
-                                className={`group-detail-status-icon fas fa-${statusIcon} my-2`}
+                                className={`group-status-icon fas fa-${statusIcon} my-2`}
                             />
                             <h1 className="mb-1 text-uppercase">
                                 {value ?? "Unknown"}

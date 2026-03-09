@@ -1,31 +1,31 @@
-import { Button, Card, Collapse, Nav } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { WidgetLocation } from "../WidgetLocation";
 import { useState } from "react";
 import { useAppSelector, useHasDashboardWidget } from "../../../store/store";
-import { StatusHistoryVis } from "../../HistoryVis/StatusHistoryVis";
-import { useDispatch } from "react-redux";
-import { addWidget, removeWidget } from "../../../store/dashboard/dashboard";
 import {
     DashboardWidgetVariant,
     type DashboardWidgetPath,
 } from "../../../store/dashboard/DashboardWidget";
-import { WidgetLocation } from "../../widgets/WidgetLocation";
+import { Button, Card, Collapse, Nav } from "react-bootstrap";
+import { addWidget, removeWidget } from "../../../store/dashboard/dashboard";
 import { NavLink } from "react-router";
+import { ToggleHistoryVis } from "../../HistoryVis/ToggleHistoryVis";
 
-export function GroupStatusHistory({
-    groupId,
+export function ActuatorHistory({
+    actuatorId,
     location,
 }: {
-    groupId: string;
+    actuatorId: string;
     location: WidgetLocation;
 }) {
-    const group = useAppSelector((state) => state.metrics[groupId]);
+    const actuator = useAppSelector((state) => state.actuators[actuatorId!]);
 
     const [isOpen, setOpen] = useState(true);
 
     const dispatch = useDispatch();
     const dashboardWidget = {
-        variant: DashboardWidgetVariant.GroupStatusHistory,
-        groupId: group.id,
+        variant: DashboardWidgetVariant.ActuatorHistory,
+        actuatorId: actuatorId!,
     } satisfies DashboardWidgetPath;
     const hasDashboardWidget = useHasDashboardWidget(dashboardWidget);
 
@@ -36,9 +36,9 @@ export function GroupStatusHistory({
                     <Nav.Item className="me-auto ms-3">
                         <h4 className="m-0">
                             <b>
-                                {location === WidgetLocation.GroupDetail
+                                {location === WidgetLocation.ActuatorDetail
                                     ? "Status"
-                                    : group.name}{" "}
+                                    : actuator.name}{" "}
                                 History
                             </b>
                         </h4>
@@ -66,12 +66,12 @@ export function GroupStatusHistory({
                             )}
                         </Button>
                     </Nav.Item>
-                    {location === WidgetLocation.GroupDetail ? (
+                    {location === WidgetLocation.ActuatorDetail ? (
                         <></>
                     ) : (
                         <>
                             <Nav.Item className="ms-2">
-                                <NavLink to={`/metrics/${groupId}`}>
+                                <NavLink to={`/actuators/${actuatorId}`}>
                                     <Button
                                         variant="secondary"
                                         title="Show Detail"
@@ -100,7 +100,7 @@ export function GroupStatusHistory({
             <Collapse in={isOpen}>
                 <div>
                     <Card.Body>
-                        <StatusHistoryVis data={group.statuses!} />
+                        <ToggleHistoryVis data={actuator.history!} />
                     </Card.Body>
                 </div>
             </Collapse>

@@ -6,22 +6,46 @@ import { useDispatch } from "react-redux";
 import { addGroup, addGroupValue } from "../../store/metrics/metrics";
 import { markMetricsInitialized } from "../../store/init/init";
 import { useWebSocket } from "../../api/websocket";
-import { METRICS_API_URL } from "../../env";
-import { convertApiGroupDataToInternal } from "../../api/ApiGroupValue";
+import { ACTUATORS_API_URL, METRICS_API_URL } from "../../env";
+import {
+    convertApiGroupDataToInternal,
+    type ApiGroupValue,
+} from "../../api/ApiGroupValue";
 import {
     convertApiGroupSpecToInternal,
     type ApiGroupSpec,
 } from "../../api/ApiGroupSpec";
 import { useAppSelector } from "../../store/store";
+import {
+    convertApiActuatorSpecToInternal,
+    type ApiActuatorSpec,
+} from "../../api/ApiActuatorSpec";
+import { addActuator, addActuatorValue } from "../../store/actuators/actuators";
+import {
+    convertApiActuatorValueToInternal,
+    type ApiActuatorValue,
+} from "../../api/ApiActuatorValue";
 
 function AppInner() {
     const location = useLocation();
     const dispatch = useDispatch();
 
     useWebSocket(`ws://${METRICS_API_URL}/api/metrics/ws`, (data: string) => {
-        const convertedData = convertApiGroupDataToInternal(JSON.parse(data));
+        const convertedData = convertApiGroupDataToInternal(
+            JSON.parse(data) as ApiGroupValue
+        );
         dispatch(addGroupValue(convertedData));
     });
+
+    useWebSocket(
+        `ws://${ACTUATORS_API_URL}/api/actuators/ws`,
+        (data: string) => {
+            const convertedData = convertApiActuatorValueToInternal(
+                JSON.parse(data) as ApiActuatorValue
+            );
+            dispatch(addActuatorValue(convertedData));
+        }
+    );
 
     return (
         <div className="app">
@@ -36,8 +60,11 @@ function AppInner() {
                         <Nav.Link as={NavLink} to="/dashboard">
                             Dashboard
                         </Nav.Link>
-                        <Nav.Link as={NavLink} to="/groups">
-                            Groups
+                        <Nav.Link as={NavLink} to="/metrics">
+                            Metrics
+                        </Nav.Link>
+                        <Nav.Link as={NavLink} to="/actuators">
+                            Actuators
                         </Nav.Link>
                     </Nav>
                 </Container>
@@ -54,11 +81,21 @@ function App() {
 
     useEffect(() => {
         (async () => {
-            const data: ApiGroupSpec[] = await (
+            const metricsData: ApiGroupSpec[] = await (
                 await fetch(`http://${METRICS_API_URL}/api/metrics/discover`)
             ).json();
-            for (const group of data) {
-                dispatch(addGroup(convertApiGroupSpecToInternal(group)));
+            for (const metricsGroup of metricsData) {
+                dispatch(addGroup(convertApiGroupSpecToInternal(metricsGroup)));
+            }
+            const actuatorData: ApiActuatorSpec[] = await (
+                await fetch(
+                    `http://${ACTUATORS_API_URL}/api/actuators/discover`
+                )
+            ).json();
+            for (const actuator of actuatorData) {
+                dispatch(
+                    addActuator(convertApiActuatorSpecToInternal(actuator))
+                );
             }
             dispatch(markMetricsInitialized());
         })();

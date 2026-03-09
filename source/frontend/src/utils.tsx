@@ -191,7 +191,6 @@ export function formatUnit(value: string | number, unit: MetricUnit) {
         case "L/min":
             return `${(value as number).toFixed(2)} L/min`;
         case "":
-            console.log(value);
             return (
                 (value as string)[0].toLocaleUpperCase() +
                 (value as string).slice(1).toLocaleLowerCase()
@@ -203,3 +202,8 @@ export const statusToBootstrapColor = {
     [Status.Ok]: "success",
     [Status.Warning]: "warning",
 };
+
+export const capitalize = (value: string) => {
+    console.log(value);
+    return value.charAt(0).toLocaleUpperCase() + value.slice(1);
+}
