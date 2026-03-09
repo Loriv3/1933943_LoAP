@@ -7,13 +7,32 @@ export const MAX_HISTORY_SIZE = 100;
 export interface AddActuatorValue {
     actuatorId: string;
     date: Date;
-    value: boolean;
+    value: boolean | null;
 }
 
 export const actuatorsSlice = createSlice({
     name: "actuators",
     initialState: {} as Record<string, ActuatorHistory>,
     reducers: {
+        addActuatorUnknown: (
+            state,
+            { payload: actuatorId }: { payload: string }
+        ) => {
+            if (!(actuatorId in state)) return;
+            const actuator = state[actuatorId];
+            actuator.history.push({
+                value: null,
+                timestamp: new Date().getTime(),
+            });
+        },
+        removeActuatorUnknown: (
+            state,
+            { payload: actuatorId }: { payload: string }
+        ) => {
+            if (!(actuatorId in state)) return;
+            const actuator = state[actuatorId];
+            actuator.history = actuator.history.filter((v) => v.value !== null);
+        },
         addActuatorValue: (
             state,
             {
@@ -24,6 +43,7 @@ export const actuatorsSlice = createSlice({
         ) => {
             if (!(actuatorId in state)) return;
             const actuator = state[actuatorId];
+            actuator.history = actuator.history.filter((v) => v.value !== null);
             actuator.history.push({ value, timestamp: date.getTime() });
             dropTimeSeriesData(actuator.history, MAX_HISTORY_SIZE);
         },
@@ -44,5 +64,10 @@ export const actuatorsSlice = createSlice({
     },
 });
 
-export const { addActuatorValue, addActuator } = actuatorsSlice.actions;
+export const {
+    addActuatorUnknown,
+    removeActuatorUnknown,
+    addActuatorValue,
+    addActuator,
+} = actuatorsSlice.actions;
 export const actuatorsReducer = actuatorsSlice.reducer;
