@@ -1,12 +1,12 @@
 services:
   simulator:
-    image: dascr/loadp:latest
+    image: docker.io/dascr/loadp:latest
     container_name: simulator
     ports:
       - "8080:8080"
 
   redis:
-    image: redis:7-alpine
+    image: docker.io/redis:7-alpine
     container_name: redis
     ports:
       - "6379:6379"
@@ -42,6 +42,12 @@ services:
       ARTEMIS_PORT: 61616
       ARTEMIS_USER: admin
       ARTEMIS_PASSWORD: admin
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/docs" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     depends_on:
       activemq:
         condition: service_healthy
@@ -49,7 +55,6 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
-
   metrics_service:
     build: ./metrics_service
     container_name: metrics_service
@@ -108,6 +113,19 @@ services:
       - automation_rules_data:/data
     ports:
       - "8084:8080"
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      cache_service:
+        condition: service_started
+      actuator_service:
+        condition: service_started
+      converter:
+        condition: service_started
+      automation-rules:
+        condition: service_started
 
 volumes:
   automation_rules_data:

@@ -1,5 +1,5 @@
 # ── Build stage ───────────────────────────────────────────────────────────────
-FROM python:3.12-slim AS builder
+FROM docker.io/python:3.12-slim AS builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
-FROM python:3.12-slim
+FROM docker.io/python:3.12-slim
 
 WORKDIR /app
 
