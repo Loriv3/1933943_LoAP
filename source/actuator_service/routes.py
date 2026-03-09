@@ -6,6 +6,7 @@ from log_config import logger
 from amqp_producer import send_amqp_message
 from models import PostActuatorStateRequest
 from connection_manager import connection_manager
+from actuator_display import actuator_names
 
 router = APIRouter()
 
@@ -17,7 +18,7 @@ async def get_actuators_list():
         async with httpx.AsyncClient() as httpx_client:
             cache_data = (await httpx_client.get(f"{CACHE_URL}/api/actuators")).json()
             logger.info(f"Got cache response for all actuators: {cache_data}")
-            return list(cache_data.keys())
+            return list(map(lambda key: { "name": actuator_names[key], "actuator_id": key }, cache_data.keys()))
     except Exception as e:
         logger.error(f"Error fetching all actuators from cache: {e}")
 

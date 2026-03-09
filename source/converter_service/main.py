@@ -81,7 +81,7 @@ class CommandListener(stomp.ConnectionListener):
             logger.error(f"Invalid command: {e} — body: {frame.body}")
 
     def on_error(self, frame):
-        logger.error(f"AMQ error: {frame.body}")
+        logger.error(f"AMQ error: {frame}")
 
     def on_disconnected(self):
         logger.warning("AMQ command listener disconnected")

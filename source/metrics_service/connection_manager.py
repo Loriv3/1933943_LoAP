@@ -16,13 +16,13 @@ class ConnectionManager:
         if init_data is not None:
             await self.send_message(websocket, init_data)
         self.connections.append(Connection(websocket, id))
-        logger.info(f"Connection opened for {id}")
+        logger.info(f"Connection opened for {id or "all"}")
 
     def disconnect(self, websocket: WebSocket):
         for connection in self.connections:
             if connection.websocket == websocket:
                 self.connections.remove(connection)
-                logger.info(f"Connection closed for {connection.id}")
+                logger.info(f"Connection closed for {connection.id or "all"}")
 
     async def send_message(self, websocket: WebSocket, message: dict):
         await websocket.send_json(message)
