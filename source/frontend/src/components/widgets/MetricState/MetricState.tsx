@@ -1,5 +1,5 @@
 import { Button, Card, Collapse, Nav } from "react-bootstrap";
-import { arrayLast, formatUnit, useTimer } from "../../../utils";
+import { arrayLast, formatTime, formatUnit, useTimer } from "../../../utils";
 import { useState } from "react";
 import { visualizerTypes } from "./visualizerTypes";
 import { metricTypeIcons } from "../../../metricTypeIcons";
@@ -22,9 +22,7 @@ export function MetricState({
     groupId: string;
     location: WidgetLocation;
 }) {
-    const groupName = useAppSelector(
-        (state) => state.metrics[groupId].name
-    );
+    const groupName = useAppSelector((state) => state.metrics[groupId].name);
     const metric = useAppSelector(
         (state) => state.metrics[groupId].metrics[metricId]
     );
@@ -71,7 +69,11 @@ export function MetricState({
                             </Nav.Item>
                             <Nav.Item className="ms-3">
                                 <h4 className="m-0">
-                                    <b>{location === WidgetLocation.GroupDetail ? metric.name : `${groupName} ${metric.name}`}</b>
+                                    <b>
+                                        {location === WidgetLocation.GroupDetail
+                                            ? metric.name
+                                            : `${groupName} ${metric.name}`}
+                                    </b>
                                 </h4>
                             </Nav.Item>
                             <Nav.Item className="flex-fill" />{" "}
@@ -123,7 +125,9 @@ export function MetricState({
                     ) : (
                         <>
                             <Nav.Item className="ms-2">
-                                <NavLink to={`/metrics/${groupId}/${metric.id}`}>
+                                <NavLink
+                                    to={`/metrics/${groupId}/${metric.id}`}
+                                >
                                     <Button
                                         variant="secondary"
                                         title="Show Detail"
@@ -165,7 +169,9 @@ export function MetricState({
                                     Last updated:{" "}
                                     {secondsSinceLastUpdate === null
                                         ? "never"
-                                        : `${secondsSinceLastUpdate} s ago`}
+                                        : `${formatTime(
+                                              secondsSinceLastUpdate
+                                          )} ago`}
                                 </small>
                             </div>
                         ) : (

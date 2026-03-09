@@ -6,7 +6,7 @@ import {
     type DashboardWidgetPath,
 } from "../../../store/dashboard/DashboardWidget";
 import { useDispatch } from "react-redux";
-import { arrayLast, useTimer } from "../../../utils";
+import { arrayLast, formatTime, useTimer } from "../../../utils";
 import { useState } from "react";
 import { addWidget, removeWidget } from "../../../store/dashboard/dashboard";
 import { NavLink } from "react-router";
@@ -166,7 +166,9 @@ export function ActuatorToggle({
                                     Last updated:{" "}
                                     {secondsSinceLastUpdate === null
                                         ? "never"
-                                        : `${secondsSinceLastUpdate} s ago`}
+                                        : `${formatTime(
+                                              secondsSinceLastUpdate
+                                          )} ago`}
                                 </small>
                             </div>
                         </div>

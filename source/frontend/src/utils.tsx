@@ -200,7 +200,28 @@ export const statusToBootstrapColor = {
     [Status.Warning]: "warning",
 };
 
-export const capitalize = (value: string) => {
+export function capitalize(value: string) {
     console.log(value);
     return value.charAt(0).toLocaleUpperCase() + value.slice(1);
 };
+
+export function formatTime(seconds: number) {
+    let result = "";
+    if (seconds >= 60) {
+        let minutes = Math.floor(seconds / 60);
+        seconds %= 60;
+        if (minutes >= 60) {
+            let hours = Math.floor(minutes / 60);
+            minutes %= 60;
+            if (hours >= 60) {
+                const days = Math.floor(hours / 24);
+                hours %= 24;
+                result += `${days} d `;
+            }
+            result += `${hours} h `;
+        }
+        result += `${minutes} min `;
+    }
+    result += `${seconds} s`;
+    return result;
+}

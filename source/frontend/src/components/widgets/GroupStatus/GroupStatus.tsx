@@ -2,7 +2,12 @@ import "./GroupStatus.css";
 
 import { useState } from "react";
 import { Status } from "../../../store/metrics/GroupHistory";
-import { arrayLast, statusToBootstrapColor, useTimer } from "../../../utils";
+import {
+    arrayLast,
+    formatTime,
+    statusToBootstrapColor,
+    useTimer,
+} from "../../../utils";
 import { useDispatch } from "react-redux";
 import {
     DashboardWidgetVariant,
@@ -144,7 +149,9 @@ export function GroupStatus({
                                 Last updated:{" "}
                                 {secondsSinceLastUpdate === null
                                     ? "never"
-                                    : `${secondsSinceLastUpdate} s ago`}
+                                    : `${formatTime(
+                                          secondsSinceLastUpdate
+                                      )} ago`}
                             </small>
                         </div>
                     </Card.Body>
