@@ -5,7 +5,10 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { addGroup, addGroupValue } from "../../store/metrics/metrics";
 import { markMetricsInitialized } from "../../store/init/init";
-import { useWebSocket } from "../../api/websocket";
+import {
+    useWebSocket,
+    WebsocketStatus as WebSocketStatus,
+} from "../../api/websocket";
 import { ACTUATORS_API_URL, METRICS_API_URL } from "../../env";
 import {
     convertApiGroupDataToInternal,
@@ -30,14 +33,17 @@ function AppInner() {
     const location = useLocation();
     const dispatch = useDispatch();
 
-    useWebSocket(`ws://${METRICS_API_URL}/api/metrics/ws`, (data: string) => {
-        const convertedData = convertApiGroupDataToInternal(
-            JSON.parse(data) as ApiGroupValue
-        );
-        dispatch(addGroupValue(convertedData));
-    });
+    const metricsStatus = useWebSocket(
+        `ws://${METRICS_API_URL}/api/metrics/ws`,
+        (data: string) => {
+            const convertedData = convertApiGroupDataToInternal(
+                JSON.parse(data) as ApiGroupValue
+            );
+            dispatch(addGroupValue(convertedData));
+        }
+    );
 
-    useWebSocket(
+    const actuatorsStatus = useWebSocket(
         `ws://${ACTUATORS_API_URL}/api/actuators/ws`,
         (data: string) => {
             const convertedData = convertApiActuatorValueToInternal(
@@ -46,6 +52,20 @@ function AppInner() {
             dispatch(addActuatorValue(convertedData));
         }
     );
+
+    const webSocketStatusText = {
+        [WebSocketStatus.Disconnected]: "Disconnected",
+        [WebSocketStatus.Connecting]: "Connecting",
+        [WebSocketStatus.Connected]: "Connected",
+        [WebSocketStatus.Disconnecting]: "Disconnecting",
+    };
+    const webSocketStatusColor = {
+        [WebSocketStatus.Disconnected]: "danger",
+        [WebSocketStatus.Connecting]: "warning",
+        [WebSocketStatus.Connected]: "success",
+        [WebSocketStatus.Disconnecting]: "warning",
+    };
+    const websocketsStatus = `Metrics: ${webSocketStatusText[metricsStatus]}\nActuators: ${webSocketStatusText[actuatorsStatus]}`;
 
     return (
         <div className="app">
@@ -67,6 +87,17 @@ function AppInner() {
                             Actuators
                         </Nav.Link>
                     </Nav>
+                    <Nav.Item
+                        className="me-3 d-flex navbar-status"
+                        title={websocketsStatus}
+                    >
+                        <div
+                            className={`navbar-status-metrics bg-${webSocketStatusColor[metricsStatus]}`}
+                        />
+                        <div
+                            className={`navbar-status-actuators bg-${webSocketStatusColor[actuatorsStatus]}`}
+                        />
+                    </Nav.Item>
                 </Container>
             </Navbar>
             <div className="app-content">

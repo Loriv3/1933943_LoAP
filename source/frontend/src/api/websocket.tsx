@@ -1,30 +1,47 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+export const enum WebsocketStatus {
+    Connecting,
+    Connected,
+    Disconnecting,
+    Disconnected,
+}
 
 export const useWebSocket = (
     url: string | URL,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback: (data: string) => void,
-    retryDelay: number | null = null
+    retryDelay: number | null = 1000
 ) => {
-    const activeWebSocket = useRef<WebSocket | null>(null);
-    const activeRetryDelay = useRef<number | null>(null);
-    const activeRetryTimeout = useRef<number | null>(null);
+    const [status, setStatus] = useState(WebsocketStatus.Connecting);
 
-    const retry = (url: string | URL) => {
-        if (activeRetryDelay.current) {
-            activeRetryTimeout.current = setTimeout(() => {
-                init(url);
-            }, activeRetryDelay.current);
-        }
+    type ActiveConnection = {
+        websocket: WebSocket | null;
+        url: string | URL;
+        callback: (data: string) => void;
+        retryDelay: number | null;
+        retryTimeout: number | null;
+        retryHandler: () => void;
+        retryTimeoutExpiration: Date | null;
     };
 
-    const init = (url: string | URL) => {
+    type NextConnection = {
+        url: string | URL;
+        callback: (data: string) => void;
+        retryDelay: number | null;
+    };
+
+    const activeConnection = useRef<ActiveConnection | null>(null);
+    const nextConnection = useRef<NextConnection | null>(null);
+
+    const createWebSocket = (
+        url: string | URL,
+        callback: (data: string) => void,
+        onOpen: () => void,
+        onClose: () => void
+    ) => {
         const websocket = new WebSocket(url);
-        websocket.onopen = () => {};
-        websocket.onclose = () => {
-            if (activeWebSocket.current !== websocket) return;
-            activeWebSocket.current = null;
-            retry(url);
+        websocket.onopen = () => {
+            onOpen();
         };
         websocket.onmessage = (e) => {
             callback(e.data);
@@ -32,41 +49,133 @@ export const useWebSocket = (
         websocket.onerror = (e) => {
             console.error("Socket error: ", e);
         };
-        activeWebSocket.current = websocket;
+        websocket.onclose = () => {
+            onClose();
+        };
+        return websocket;
+    };
+
+    const initNew = ({ url, callback, retryDelay }: NextConnection) => {
+        const connection: ActiveConnection = {
+            websocket: null!,
+            url,
+            callback,
+            retryDelay,
+            retryTimeout: null,
+            retryHandler: null!,
+            retryTimeoutExpiration: null,
+        };
+
+        const opened = () => {
+            setStatus(WebsocketStatus.Connected);
+        };
+
+        const scheduleRetry = () => {
+            setStatus(WebsocketStatus.Disconnected);
+            connection.websocket = null;
+            if (nextConnection.current) {
+                initNew(nextConnection.current);
+                nextConnection.current = null;
+            }
+            if (!activeConnection.current) return;
+            if (connection.retryDelay) {
+                connection.retryTimeout = setTimeout(() => {
+                    connection.retryTimeout = null;
+                    connection.retryTimeoutExpiration = null;
+                    setStatus(WebsocketStatus.Connecting);
+                    connection.websocket = createWebSocket(
+                        url,
+                        (data) => connection.callback(data),
+                        opened,
+                        scheduleRetry
+                    );
+                }, connection.retryDelay);
+                connection.retryTimeoutExpiration = new Date(
+                    new Date().getTime() + connection.retryDelay
+                );
+            }
+        };
+        connection.retryHandler = scheduleRetry;
+
+        setStatus(WebsocketStatus.Connecting);
+        connection.websocket = createWebSocket(
+            url,
+            callback,
+            opened,
+            scheduleRetry
+        );
+        activeConnection.current = connection;
     };
 
     const destroy = () => {
-        activeRetryDelay.current = null;
-        if (activeRetryTimeout.current) {
-            clearTimeout(activeRetryTimeout.current);
+        if (!activeConnection.current) return false;
+        if (activeConnection.current.websocket) {
+            activeConnection.current.websocket.close();
+            setStatus(WebsocketStatus.Disconnecting);
+            return true;
+        } else if (activeConnection.current.retryTimeout !== null) {
+            clearTimeout(activeConnection.current.retryTimeout);
+            return false;
+        } else {
+            return false;
         }
-        if (!activeWebSocket.current) return;
-        activeWebSocket.current.close();
-        activeWebSocket.current = null;
+    };
+
+    const init = (newConnection: NextConnection) => {
+        if (nextConnection.current || destroy()) {
+            nextConnection.current = newConnection;
+        } else {
+            initNew(newConnection);
+        }
     };
 
     useEffect(() => {
-        destroy();
-        init(url);
-        return () => destroy();
+        if (
+            !activeConnection.current ||
+            url !== activeConnection.current.url ||
+            nextConnection.current
+        ) {
+            init({ url, callback, retryDelay });
+        } else {
+            if (callback !== activeConnection.current.callback) {
+                activeConnection.current.callback = callback;
+            }
+            if (retryDelay !== activeConnection.current.retryDelay) {
+                if (activeConnection.current.retryTimeout) {
+                    clearTimeout(activeConnection.current.retryTimeout);
+                    if (retryDelay) {
+                        const timeToPrevious =
+                            activeConnection.current.retryTimeoutExpiration!.getTime() -
+                            new Date().getTime();
+                        const newTimeoutExpiration =
+                            timeToPrevious +
+                            retryDelay -
+                            activeConnection.current.retryDelay!;
+                        activeConnection.current.retryTimeout = setTimeout(
+                            activeConnection.current.retryHandler,
+                            newTimeoutExpiration
+                        );
+                        activeConnection.current.retryTimeoutExpiration =
+                            new Date(
+                                new Date().getTime() + newTimeoutExpiration
+                            );
+                    } else {
+                        activeConnection.current.retryTimeout = null;
+                        activeConnection.current.retryTimeoutExpiration = null;
+                    }
+                }
+                activeConnection.current.retryDelay = retryDelay;
+            }
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [url]);
+    }, [url, callback, retryDelay]);
 
     useEffect(() => {
-        if (!activeWebSocket.current) return;
-        activeWebSocket.current.onmessage = (e) => {
-            callback(e.data);
+        return () => {
+            nextConnection.current = null;
+            destroy();
         };
-    }, [callback]);
+    }, []);
 
-    useEffect(() => {
-        if (!activeWebSocket.current) return;
-        activeWebSocket.current.onmessage = (e) => {
-            callback(e.data);
-        };
-    }, [callback]);
-
-    useEffect(() => {
-        activeRetryDelay.current = retryDelay;
-    }, [retryDelay]);
+    return status;
 };

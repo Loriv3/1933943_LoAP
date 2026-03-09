@@ -10,3 +10,15 @@
     flex: 1;
     position: relative;
 }
+
+.navbar-status {
+    overflow: hidden;
+    width: 1em;
+    height: 1em;
+    border-radius: .5em;
+}
+
+.navbar-status-metrics, .navbar-status-actuators {
+    width: .5em;
+    height: 1em;
+}
