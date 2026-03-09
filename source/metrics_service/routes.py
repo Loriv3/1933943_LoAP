@@ -4,6 +4,7 @@ import os
 
 from log_config import logger
 from connection_manager import connection_manager
+from metric_display import group_data
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ async def get_metrics_list():
         async with httpx.AsyncClient() as httpx_client:
             cache_data = (await httpx_client.get(f"{CACHE_URL}/api/metrics")).json()
             logger.info(f"Got cache response for all metrics: {cache_data}")
-            return list(cache_data.keys())
+            return list(map(lambda key: { **group_data[key], "group_id": key }, cache_data.keys()))
     except Exception as e:
         logger.error(f"Error fetching all metrics from cache: {e}")
 
