@@ -108,6 +108,17 @@ services:
       - automation_rules_data:/data
     ports:
       - "8084:8080"
+  
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    depends_on:
+      metrics_service:
+        condition: service_started
+      actuator_service:
+        condition: service_started
+    ports:
+      - "8085:80"
 
 volumes:
   automation_rules_data:

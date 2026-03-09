@@ -74,7 +74,7 @@ function dataYToPixelY<TType extends ChartType>(
     );
 }
 
-export function binaryGradient<TType extends ChartType>({
+export function binaryGradient<TType extends ChartType = "line">({
     startColor,
     endColor,
     start,
@@ -99,7 +99,7 @@ export function binaryGradient<TType extends ChartType>({
     };
 }
 
-export function multiStopGradient<TType extends ChartType>(
+export function multiStopGradient<TType extends ChartType = "line">(
     stops: ({ color: string; value: number } | string)[]
 ): (ctx: ScriptableContext<TType>) => Color {
     return (ctx) => {
