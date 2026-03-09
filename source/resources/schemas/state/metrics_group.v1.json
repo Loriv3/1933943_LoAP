@@ -35,17 +35,20 @@
     "$defs": {
         "metric": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
-            "title": "Device metric",
+            "title": "Metric",
             "oneOf": [
                 {
                     "$ref": "#/$defs/metric/$defs/baseMetric",
                     "properties": {
                         "type": {
-                            "const": "ph"
+                            "const": "chemistry.ph"
                         },
                         "value": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "pH"
                                     }
@@ -64,6 +67,9 @@
                         "value": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "ppm"
                                     }
@@ -82,6 +88,9 @@
                         "value": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "%"
                                     }
@@ -100,6 +109,9 @@
                         "value": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "g/m3"
                                     }
@@ -113,13 +125,16 @@
                     "$ref": "#/$defs/metric/$defs/baseMetric",
                     "properties": {
                         "type": {
-                            "const": "water_level"
+                            "const": "water.level"
                         },
                         "value": {
                             "allOf": [
                                 {
                                     "contains": {
                                         "properties": {
+                                            "value": {
+                                                "type": "number"
+                                            },
                                             "unit": {
                                                 "const": "L"
                                             }
@@ -129,6 +144,9 @@
                                 {
                                     "contains": {
                                         "properties": {
+                                            "value": {
+                                                "type": "number"
+                                            },
                                             "unit": {
                                                 "const": "%"
                                             }
@@ -150,6 +168,9 @@
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "C"
                                     }
@@ -163,11 +184,14 @@
                     "$ref": "#/$defs/metric/$defs/baseMetric",
                     "properties": {
                         "type": {
-                            "const": "humidity"
+                            "const": "thermal.humidity"
                         },
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "%"
                                     }
@@ -181,11 +205,14 @@
                     "$ref": "#/$defs/metric/$defs/baseMetric",
                     "properties": {
                         "type": {
-                            "const": "pressure"
+                            "const": "environment.pressure"
                         },
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "Pa"
                                     }
@@ -199,13 +226,16 @@
                     "$ref": "#/$defs/metric/$defs/baseMetric",
                     "properties": {
                         "type": {
-                            "const": "cycles_per_hour"
+                            "const": "airlock.cycles_per_hour"
                         },
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
-                                        "const": "h^-1"
+                                        "const": "cycles/h"
                                     }
                                 }
                             },
@@ -217,13 +247,58 @@
                     "$ref": "#/$defs/metric/$defs/baseMetric",
                     "properties": {
                         "type": {
-                            "const": "radiation"
+                            "const": "airlock.state"
                         },
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "enum": ["idle", "pressurizing", "depressurizing"]
+                                    },
+                                    "unit": {
+                                        "const": ""
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "environment.radiation"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "Sv/h"
+                                    }
+                                }
+                            },
+                            "maxItems": 1
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/metric/$defs/baseMetric",
+                    "properties": {
+                        "type": {
+                            "const": "environment.oxygen"
+                        },
+                        "values": {
+                            "items": {
+                                "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
+                                    "unit": {
+                                        "const": "%"
                                     }
                                 }
                             },
@@ -240,8 +315,11 @@
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
-                                        "const": "W"
+                                        "const": "kW"
                                     }
                                 }
                             },
@@ -258,8 +336,11 @@
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
-                                        "const": "Wh"
+                                        "const": "kWh"
                                     }
                                 }
                             },
@@ -276,6 +357,9 @@
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "V"
                                     }
@@ -294,6 +378,9 @@
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "A"
                                     }
@@ -307,11 +394,14 @@
                     "$ref": "#/$defs/metric/$defs/baseMetric",
                     "properties": {
                         "type": {
-                            "const": "flow"
+                            "const": "thermal.flow"
                         },
                         "values": {
                             "items": {
                                 "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
                                     "unit": {
                                         "const": "L/min"
                                     }
@@ -340,7 +430,14 @@
                                         "type": "object",
                                         "properties": {
                                             "value": {
-                                                "type": "number"
+                                                "oneOf": [
+                                                    {
+                                                       "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    }
+                                                ]
                                             },
                                             "unit": {
                                                 "type": "string"

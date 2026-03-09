@@ -56,6 +56,10 @@ def metric(id: str, type: str, value: Any, unit: str) -> Metric:
     """Shorthand per creare un Metric con un singolo valore."""
     return Metric(id=id, type=type, value=[MetricValue(value=value, unit=unit)])
 
+def metricArr(id: str, type: str, values: list[Any], units: list[str]) -> Metric:
+    """Shorthand per creare un Metric con un singolo valore."""
+    return Metric(id=id, type=type, value=map(lambda i: MetricValue(value=values[i], unit=units[i]), range(len(values))))
+
 
 # ─── Actuator Event ───────────────────────────────────────────────────────────
 

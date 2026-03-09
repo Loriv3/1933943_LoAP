@@ -4,41 +4,41 @@ Ogni normalizer riceve il payload grezzo e restituisce un UnifiedEvent
 con il nuovo schema: group_id + metrics[].id + metrics[].type
 """
 
-from schema import UnifiedEvent, ActuatorEvent, Metric, MetricValue, metric
+from schema import UnifiedEvent, ActuatorEvent, Metric, MetricValue, metric, metricArr
 
 
 # ─── REST Sensors ─────────────────────────────────────────────────────────────
 
 def normalize_rest_scalar_temperature(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
-        group_id="greenhouse_temperature",
+        group_id="greenhouse",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
-        metrics=[metric("temperature", "thermal.temperature", payload["value"], payload.get("unit", ""))],
+        status=payload.get("status", None),
+        metrics=[metric("temperature", "thermal.temperature", payload["value"], payload["unit"])],
     )
 
 def normalize_rest_scalar_humidity(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
-        group_id="greenhouse_humidity",
+        group_id="entrance",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
-        metrics=[metric("humidity", "thermal.humidity", payload["value"], payload.get("unit", ""))],
+        status=payload.get("status", None),
+        metrics=[metric("humidity", "thermal.humidity", payload["value"], payload["unit"])],
     )
 
 def normalize_rest_scalar_co2(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
-        group_id="air_quality",
+        group_id="hall",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
-        metrics=[metric("co2", "air_quality.particle_volume_concentration", payload["value"], payload.get("unit", ""))],
+        status=payload.get("status", None),
+        metrics=[metric("co2", "air_quality.particle_volume_concentration", payload["value"], payload["unit"])],
     )
 
 def normalize_rest_scalar_pressure(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
-        group_id="atmosphere",
+        group_id="corridor",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
-        metrics=[metric("pressure", "atmosphere.pressure", payload["value"], payload.get("unit", ""))],
+        status=payload.get("status", None),
+        metrics=[metric("pressure", "environment.pressure", payload["value"], payload.get("unit", ""))],
     )
 
 def normalize_rest_chemistry_ph(payload: dict) -> UnifiedEvent:
@@ -46,9 +46,9 @@ def normalize_rest_chemistry_ph(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
         group_id="hydroponics",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
+        status=payload.get("status", None),
         metrics=[
-            metric(m["metric"], "chemistry.ph", m["value"], m.get("unit", ""))
+            metric(m["metric"], "chemistry.ph", m["value"], m["unit"])
             for m in measurements
         ],
     )
@@ -56,75 +56,80 @@ def normalize_rest_chemistry_ph(payload: dict) -> UnifiedEvent:
 def normalize_rest_chemistry_voc(payload: dict) -> UnifiedEvent:
     measurements = payload.get("measurements", [])
     return UnifiedEvent(
-        group_id="air_quality",
+        group_id="air_quality_voc_co2e",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
+        status=payload.get("status", None),
         metrics=[
-            metric(m["metric"], "air_quality.particle_volume_concentration", m["value"], m.get("unit", ""))
+            metric(m["metric"], "air_quality.particle_volume_concentration", m["value"], m["unit"])
             for m in measurements
         ],
     )
 
 def normalize_rest_particulate(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
-        group_id="air_quality",
+        group_id="air_quality_pm1_pm10_pm25",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
+        status=payload.get("status", None),
         metrics=[
-            metric("pm1",  "air_quality.particulate_density", payload["pm1_ug_m3"],  "ug/m3"),
-            metric("pm25", "air_quality.particulate_density", payload["pm25_ug_m3"], "ug/m3"),
-            metric("pm10", "air_quality.particulate_density", payload["pm10_ug_m3"], "ug/m3"),
+            metric("pm1",  "air_quality.mass_volume_concentration", payload["pm1_ug_m3"],  "ug/m3"),
+            metric("pm25", "air_quality.mass_volume_concentration", payload["pm25_ug_m3"], "ug/m3"),
+            metric("pm10", "air_quality.mass_volume_concentration", payload["pm10_ug_m3"], "ug/m3"),
         ],
     )
 
-def normalize_rest_level(payload: dict) -> UnifiedEvent:
+def normalize_rest_water_level(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
         group_id="water_tank",
         at=payload["captured_at"],
-        status=payload.get("status", "unknown"),
-        metrics=[
-            metric("level_pct",    "level.percentage", payload["level_pct"],    "%"),
-            metric("level_liters", "level.volume",     payload["level_liters"], "L"),
-        ],
+        status=payload.get("status", None),
+        metrics=[metricArr(
+            "level",
+            "water.level",
+            [payload["level_liters"], payload["level_pct"]],
+            ["L", "%"]
+        )],
     )
 
 
 # ─── Telemetry Topics ─────────────────────────────────────────────────────────
 
 def normalize_topic_power(payload: dict) -> UnifiedEvent:
-    subsystem = payload.get("subsystem", "unknown")
+    subsystem = payload.get("subsystem", None)
     return UnifiedEvent(
-        group_id="power",
+        group_id=f"power.{subsystem}",
         at=payload["event_time"],
         status="ok",
         metrics=[
-            metric(f"{subsystem}.power_kw",       "power.kw",         payload["power_kw"],       "kW"),
-            metric(f"{subsystem}.voltage_v",      "power.voltage",    payload["voltage_v"],      "V"),
-            metric(f"{subsystem}.current_a",      "power.current",    payload["current_a"],      "A"),
-            metric(f"{subsystem}.cumulative_kwh", "power.cumulative", payload["cumulative_kwh"], "kWh"),
+            metric("power",      "power.power",            payload["power_kw"],       "kW"),
+            metric("voltage",    "power.voltage",          payload["voltage_v"],      "V"),
+            metric("current",    "power.current",          payload["current_a"],      "A"),
+            metric("cumulative", "power.cumulative_power", payload["cumulative_kwh"], "kWh"),
         ],
     )
 
 def normalize_topic_environment(payload: dict) -> UnifiedEvent:
     source = payload.get("source", {})
-    system = source.get("system", "unknown")
+    system = source.get("system", None)
+    metrics = []
+    for m in payload["measurements"]:
+        if m["metric"] == "radiation_uSv_h":
+            metrics.append(metric("radiation", "environment.radiation", m["value"], m["unit"]))
+        elif m["metric"] == "oxygen_percent":
+            metrics.append(metric("oxygen",    "environment.oxygen",    m["value"], m["unit"]))
     return UnifiedEvent(
-        group_id="environment",
+        group_id=f"environment.{system}",
         at=payload["event_time"],
-        status=payload.get("status", "unknown"),
-        metrics=[
-            metric(m["metric"], f"environment.{system}", m["value"], m.get("unit", ""))
-            for m in payload.get("measurements", [])
-        ],
+        status=payload.get("status", None),
+        metrics=metrics,
     )
 
 def normalize_topic_thermal_loop(payload: dict) -> UnifiedEvent:
     return UnifiedEvent(
-        group_id="thermal",
+        group_id="thermal_loop",
         at=payload["event_time"],
-        status=payload.get("status", "unknown"),
+        status=payload.get("status", None),
         metrics=[
-            metric("temperature", "thermal.temperature", payload["temperature_c"], "°C"),
+            metric("temperature", "thermal.temperature", payload["temperature_c"], "C"),
             metric("flow",        "thermal.flow",        payload["flow_l_min"],    "L/min"),
         ],
     )
@@ -135,8 +140,8 @@ def normalize_topic_airlock(payload: dict) -> UnifiedEvent:
         at=payload["event_time"],
         status="ok",
         metrics=[
-            metric("cycles_per_hour", "airlock.cycles", payload["cycles_per_hour"], "cycles/h"),
-            metric("last_state",      "airlock.state",  payload["last_state"],      ""),
+            metric("cycles_per_hour", "airlock.cycles_per_hour", payload["cycles_per_hour"],    "cyc/h"),
+            metric("state",           "airlock.state",           payload["last_state"].lower(), ""),
         ],
     )
 
@@ -163,7 +168,7 @@ SENSOR_ID_NORMALIZERS: dict[str, callable] = {
     "hydroponic_ph":          normalize_rest_chemistry_ph,
     "air_quality_voc":        normalize_rest_chemistry_voc,
     "air_quality_pm25":       normalize_rest_particulate,
-    "water_tank_level":       normalize_rest_level,
+    "water_tank_level":       normalize_rest_water_level,
 }
 
 SCHEMA_NORMALIZERS: dict[str, callable] = {
