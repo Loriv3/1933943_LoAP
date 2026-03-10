@@ -261,7 +261,6 @@ export const statusToBootstrapColor = {
 };
 
 export function capitalize(value: string) {
-    console.log(value);
     return value.charAt(0).toLocaleUpperCase() + value.slice(1);
 }
 

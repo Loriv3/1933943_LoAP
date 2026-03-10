@@ -9,7 +9,6 @@ export interface ApiActuatorValue {
 export const convertApiActuatorValueToInternal = (
     data: ApiActuatorValue
 ): AddActuatorValue => {
-    console.log(data);
     return {
         actuatorId: data.actuator_id,
         value: data.is_on,
