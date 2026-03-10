@@ -3,6 +3,7 @@ package marsops.automation.domain;
 import java.util.Date;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -13,6 +14,7 @@ import lombok.Data;
 public class ActuatorCommand {
     private final Date updatedAt;
     private final String actuatorId;
+    @JsonProperty("is_on")
     private final boolean isOn;
     private final UUID ruleId;
     private final Reason reason;

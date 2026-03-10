@@ -90,9 +90,9 @@ public class RuleController {
     @PatchMapping("/{id}/enabled")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setEnabled(@PathVariable("id") UUID id, @Valid @RequestBody SetEnabledRequest request) {
-        ruleRepository.setEnabled(id, request.getEnabled())
+        ruleRepository.setEnabled(id, request.isEnabled())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
-        LOGGER.info("[AUTOMATION-AUDIT] setEnabled id={} enabled={}", id, request.getEnabled());
+        LOGGER.info("[AUTOMATION-AUDIT] setEnabled id={} enabled={}", id, request.isEnabled());
     }
 
     @DeleteMapping("/{id}")

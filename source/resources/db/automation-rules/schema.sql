@@ -3,8 +3,8 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS rules (
   id TEXT PRIMARY KEY,
   enabled INTEGER NOT NULL,
-  created_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
   group_id TEXT NOT NULL,
   metric_id TEXT NOT NULL,
   operator TEXT NOT NULL,

@@ -6,25 +6,27 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import marsops.automation.domain.Operator;
 
 @Data
+@NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CreateRuleRequest {
-    private final boolean enabled = true;
+    private boolean enabled = true;
 
     @NotBlank
-    private final String groupId;
+    private String groupId;
     @NotBlank
-    private final String metricId;
+    private String metricId;
+    @NotNull
+    private Operator operator;
+    @NotNull
+    private Object compareValue;
+    @NotNull
+    private String unit;
     @NotBlank
-    private final Operator operator;
+    private String actuatorId;
     @NotNull
-    private final Object compareValue;
-    @NotNull
-    private final String unit;
-    @NotBlank
-    private final String actuatorId;
-    @NotNull
-    private final boolean actuatorState;
+    private boolean actuatorState;
 }

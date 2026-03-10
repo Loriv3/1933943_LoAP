@@ -48,6 +48,7 @@ public class RuleEngineService {
 
         for (var metric : event.getMetrics()) {
             List<Rule> rules = ruleRepository.findEnabledByMetric(event.getGroupId(), metric.getId());
+            LOGGER.info("Found {} rule/s: {}", rules.size(), rules);
             for (var rule : rules) {
                 Boolean wasOn = actuatorStateCache.get(rule.getActuatorId());
                 boolean willBeOn = rule.isActuatorState();

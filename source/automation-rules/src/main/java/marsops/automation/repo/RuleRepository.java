@@ -8,6 +8,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -17,14 +19,19 @@ import java.util.UUID;
 public class RuleRepository {
     private final JdbcTemplate jdbcTemplate;
 
+    private final Date dateFromString(String s) {
+        var dateTime = ZonedDateTime.parse(s, DateTimeFormatter.ISO_DATE_TIME);
+        return Date.from(dateTime.toInstant());
+    }
+
     private final @NonNull RowMapper<Rule> ruleRowMapper = (rs, rowNum) -> {
         String compareValueStr = rs.getString("compare_value_str");
         Double compareValueDouble = rs.getDouble("compare_value_double");
         return new Rule(
                 UUID.fromString(rs.getString("id")),
                 rs.getBoolean("enabled"),
-                rs.getDate("created_at"),
-                rs.getDate("updated_at"),
+                dateFromString(rs.getString(("created_at"))),
+                dateFromString(rs.getString(("updated_at"))),
                 rs.getString("group_id"),
                 rs.getString("metric_id"),
                 Operator.forValue(rs.getString("operator")),
@@ -68,7 +75,7 @@ public class RuleRepository {
         jdbcTemplate.update(
                 """
                         INSERT INTO rules (id, enabled, created_at, updated_at, group_id, metric_id, operator, compare_value_str, compare_value_double, unit, actuator_id, actuator_state)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                 id.toString(),
                 enabled,

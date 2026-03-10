@@ -4,6 +4,9 @@ import marsops.automation.domain.FiringRecord;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,6 +14,11 @@ import java.util.UUID;
 public class FiringRepository {
 
     private final JdbcTemplate jdbcTemplate;
+
+    private final Date dateFromString(String s) {
+        var dateTime = ZonedDateTime.parse(s, DateTimeFormatter.ISO_DATE_TIME);
+        return Date.from(dateTime.toInstant());
+    }
 
     public FiringRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -20,7 +28,7 @@ public class FiringRepository {
         jdbcTemplate.update(
                 """
                         INSERT INTO rule_firings (id, rule_id, fired_at, group_id, metric_id, metric_value_str, metric_value_double, metric_unit, actuator_id, actuator_state)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                 record.getId().toString(),
                 record.getRuleId().toString(),
@@ -48,7 +56,7 @@ public class FiringRepository {
                     return new FiringRecord(
                             UUID.fromString(rs.getString("id")),
                             UUID.fromString(rs.getString("rule_id")),
-                            rs.getDate("fired_at"),
+                            dateFromString(rs.getString("fired_at")),
                             rs.getString("group_id"),
                             rs.getString("metric_id"),
                             metricValueStr == null ? metricValueDouble : metricValueStr,
