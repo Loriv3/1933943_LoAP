@@ -41,6 +41,13 @@ The simulator provided as the initial assignment prompt. Provides sensor and act
 ### PERSISTENCE EVALUATION
 While the simulator doesn't seem to persist data in this simulation, it is treated as an blackbox by the rest of the system.
 
+### MICROSERVICES:
+
+#### MICROSERVICE: simulator
+- TYPE: backend
+- DESCRIPTION: Provides sensor data and actuator feedback.
+- PORTS: 8080
+
 
 
 ## CONTAINER_NAME: redis
@@ -61,6 +68,13 @@ Configured as an ephemeral in-memory cache for this laboratory setup. Historical
 - Receives sensor/actuator data to cache from the cache service.
 - Exposes the cache's contents to the cache service in order to serve queries about sensor/actuator state without waiting for new events.
 - Docker service name: `redis`.
+
+### MICROSERVICES:
+
+#### MICROSERVICE: redis
+- TYPE: database
+- DESCRIPTION: Provides an in-memory cache for sensor and actuator states.
+- PORTS: 6379
 
 
 
@@ -83,6 +97,13 @@ Configured as non-persistent broker for this laboratory setup (`persistence-enab
 - Receives sensor/actuator update events on topics `sensor.events` and `actuator.states`.
 - Exposes queue `actuator.commands` for actuator commands.
 - Docker service name: `activemq`.
+
+### MICROSERVICES:
+
+#### MICROSERVICE: activemq
+- TYPE: message queue broker
+- DESCRIPTION: Provides the message queues that all other microservices use to communicate.
+- PORTS: 61616, 8161 (console)
 
 
 
