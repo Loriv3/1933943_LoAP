@@ -109,30 +109,45 @@ Configured as non-persistent broker for this laboratory setup (`persistence-enab
 
 ## CONTAINER_NAME: cache_service
 
-### DESCRIPTION:
+### DESCRIPTION: 
+A Python-based FastAPI service that serves as the real-time state synchronization layer of the MarsOps platform.
 
 
 ### USER STORIES:
+16, 17, 19, 20
 
-
-### PORTS:
+### PORTS: 
+- 8081 (exposed)
+- 8080 (internal)
 
 
 ### PERSISTENCE EVALUATION
-
+The service itself is stateless.
 
 ### EXTERNAL SERVICES CONNECTIONS
+* ActiveMQ Artemis: Connects via AMQP 1.0 to consume normalized events from sensor.events and actuator.states topics.
 
+* Redis: Connects to the redis host on port 6379 to perform atomic SET/GET operations on state snapshots.
 
-### MICROSERVICES:
+### MICROSERVICES: cache_service
 
 #### MICROSERVICE: cache-service
 - TYPE: backend
-- DESCRIPTION:
-- PORTS:
-- TECHNOLOGICAL SPECIFICATION:
-- SERVICE ARCHITECTURE:
-- ENDPOINTS:
+- DESCRIPTION: Manages the life cycle of real-time data ingestion and serves as the primary data provider for the frontend dashboard initial load.
+- PORTS: 
+  - 8080 (internal)
+  - 8081 (exposed)
+- TECHNOLOGICAL SPECIFICATION: 
+  - Python 3.12-slim
+  - Runtime: Python 3.12-slim
+  - Web Framework: FastAPI with Uvicorn
+  - Messaging: python-qpid-proton (AMQP 1.0)
+- SERVICE ARCHITECTURE: 
+  - Lifespan Manager: Orchestrates the startup of the AMQP consumer thread alongside the FastAPI app.
+  - AMQP Consumer: Parses incoming JSON payloads and routes them to Redis using key prefixes (metrics.* for sensors and actuator.* for devices). 
+  - REST API: Provides grouped and granular access to cached state data.
+
+- ENDPOINTS: no endpoints exposed
 | HTTP METHOD | URL | Description | User Stories |
 | ----------- | --- | ----------- | ------------ |
 
