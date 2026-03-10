@@ -129,7 +129,6 @@ The service itself is stateless.
 
 * Redis: Connects to the redis host on port 6379 to perform atomic SET/GET operations on state snapshots.
 
-### MICROSERVICES: cache_service
 
 #### MICROSERVICE: cache-service
 - TYPE: backend
@@ -150,6 +149,11 @@ The service itself is stateless.
 - ENDPOINTS: no endpoints exposed
 | HTTP METHOD | URL | Description | User Stories |
 | ----------- | --- | ----------- | ------------ |
+| GET | `/api/metrics` | Returns a JSON dictionary of the latest known state of all devices from Redis. | 17,20 |
+| GET | `/api/metrics/{group_id}` | Returns the latest state of a specific sensor group from Redis. | 16 |
+| POST | `/api/actuators` | Returns a JSON dictionary of the latest known ON/OFF state of all actuators from Redis. | 18, 19 |
+| GET | `/api/actuators/{actuator_id}` | Returns the latest state of a specific actuator from Redis. | 17,20 |
+
 
 
 
