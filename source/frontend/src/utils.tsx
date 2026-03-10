@@ -67,11 +67,8 @@ function dataYToPixelY<TType extends ChartType>(
     const dataHeightY = ctx.chart.scales.y.max - ctx.chart.scales.y.min;
     const canvasEndY = ctx.chart.chartArea.bottom;
     const canvasHeightY = ctx.chart.chartArea.height;
-    return (
-        canvasEndY -
-        ((value ?? ctx.chart.scales.y.min - dataStartY) / dataHeightY) *
-            canvasHeightY
-    );
+    console.log(value, dataStartY, dataHeightY, canvasEndY, canvasHeightY);
+    return canvasEndY - ((value - dataStartY) / dataHeightY) * canvasHeightY;
 }
 
 export function binaryGradient<TType extends ChartType = "line">({
@@ -93,6 +90,15 @@ export function binaryGradient<TType extends ChartType = "line">({
             0,
             dataYToPixelY(ctx, end ?? ctx.chart.scales.y.max)
         );
+        console.log(
+            gradient,
+            start,
+            end,
+            0,
+            dataYToPixelY(ctx, start ?? ctx.chart.scales.y.min),
+            0,
+            dataYToPixelY(ctx, end ?? ctx.chart.scales.y.max)
+        );
         gradient.addColorStop(0, startColor);
         gradient.addColorStop(1, endColor);
         return gradient;
@@ -100,26 +106,36 @@ export function binaryGradient<TType extends ChartType = "line">({
 }
 
 export function multiStopGradient<TType extends ChartType = "line">(
-    stops: ({ color: string; value: number } | string)[]
+    stops: [string, number][] | string[]
 ): (ctx: ScriptableContext<TType>) => Color {
     return (ctx) => {
         if (!ctx.chart.chartArea) return "#00000000";
-        const dataStartY = ctx.chart.scales.y.min;
-        const dataHeightY = ctx.chart.scales.y.max - ctx.chart.scales.y.min;
         const gradient = ctx.chart.ctx.createLinearGradient(
             0,
-            dataYToPixelY(ctx, ctx.chart.scales.y.min),
+            dataYToPixelY(
+                ctx,
+                typeof stops[0] === "string"
+                    ? ctx.chart.scales.y.min
+                    : (stops[0] as [string, number])[1]
+            ),
             0,
-            dataYToPixelY(ctx, ctx.chart.scales.y.max)
+            dataYToPixelY(
+                ctx,
+                typeof stops[0] === "string"
+                    ? ctx.chart.scales.y.min
+                    : arrayLast(stops as [string, number][])![1]
+            )
         );
         for (let i = 0; i < stops.length; i++) {
             const stop = stops[i];
             if (typeof stop === "string") {
                 gradient.addColorStop((i + 1) / stops.length, stop);
             } else {
+                const start = (stops[0] as [string, number])[1];
+                const end = arrayLast(stops as [string, number][])![1];
                 gradient.addColorStop(
-                    (stop.value - dataStartY) / dataHeightY,
-                    stop.color
+                    (stop[1] - start) / (end - start),
+                    stop[0]
                 );
             }
         }

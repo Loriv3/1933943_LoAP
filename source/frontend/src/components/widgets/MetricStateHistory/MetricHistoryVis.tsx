@@ -2,10 +2,16 @@ import "./MetricHistoryVis.css";
 
 import { Chart as ChartJS, type ChartOptions } from "chart.js";
 import { useCallback, useEffect, useRef } from "react";
-import { binaryGradient, formatValueUnit, multiStopGradient } from "../../../utils";
-import { MetricType, type MetricUnit } from "../../../store/metrics/MetricHistory";
+import { arrayLast, capitalize, formatValueUnit } from "../../../utils";
+import {
+    MetricType,
+    type MetricUnit,
+} from "../../../store/metrics/MetricHistory";
+import { colorsByType } from "./historyColorsByMetricType";
 
-const chartOptions = (unit: MetricUnit[]) =>
+const airlockStates = ["Idle", "Pressurizing", "Depressurizing"];
+
+const chartOptions = (type: MetricType, unit: MetricUnit[]) =>
     ({
         responsive: true,
         maintainAspectRatio: false,
@@ -20,10 +26,26 @@ const chartOptions = (unit: MetricUnit[]) =>
                 },
             },
             y: {
-                type: "linear",
-                ticks: {
-                    callback: (value) => formatValueUnit(value as number, unit[0]),
-                },
+                type: type === MetricType.AirlockState ? "category" : "linear",
+                labels:
+                    type === MetricType.AirlockState
+                        ? airlockStates
+                        : undefined,
+                ticks:
+                    type === MetricType.AirlockState
+                        ? {}
+                        : {
+                              callback: (value) => {
+                                  return formatValueUnit(
+                                      value as number,
+                                      arrayLast(unit)!
+                                  );
+                              },
+                          },
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                min: type === MetricType.AirlockState ? "Idle" as any : undefined,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                max: type === MetricType.AirlockState ? "Depressurizing" as any : undefined,
             },
         },
         plugins: {
@@ -32,89 +54,34 @@ const chartOptions = (unit: MetricUnit[]) =>
             },
             tooltip: {
                 intersect: false,
-                callbacks: {
-                    label: (value) =>
-                        formatValueUnit(value.parsed.y as number, unit[0]),
-                },
+                callbacks:
+                    type === MetricType.AirlockState
+                        ? undefined
+                        : {
+                              label: (value) => {
+                                  return formatValueUnit(
+                                      value.parsed.y as number,
+                                      arrayLast(unit)!
+                                  );
+                              },
+                          },
             },
         },
     } satisfies ChartOptions<"line">);
 
 export type Data = { value: (number | string)[]; timestamp: number }[];
 
-const phGradient = multiStopGradient([
-    "#ee372280",
-    "#ee347980",
-    "#f47e2680",
-    "#fba82280",
-    "#f5ec0880",
-    "#a3cc3880",
-    "#4db84780",
-    "#00924780",
-    "#00949580",
-    "#5175ba80",
-    "#454a9f80",
-    "#2a2f8480",
-    "#94258b80",
-    "#7b277980",
-]);
-
-const tempGradient = binaryGradient({
-    startColor: "#8080ff80",
-    endColor: "#ff808080",
-});
-
-const waterGradient = binaryGradient({
-    startColor: "#4579e280",
-    endColor: "#2d55aa80",
-});
-
-const borderColorByType = {
-    [MetricType.Ph]: phGradient,
-    [MetricType.AQParticleVolumeConcentration]: phGradient,
-    [MetricType.AQVolumeVolumeConcentration]: phGradient,
-    [MetricType.AQMassVolumeConcentration]: phGradient,
-    [MetricType.WaterLevel]: waterGradient,
-    [MetricType.Temperature]: tempGradient,
-    [MetricType.Humidity]: phGradient,
-    [MetricType.Pressure]: phGradient,
-    [MetricType.Oxygen]: phGradient,
-    [MetricType.CyclesPerHour]: phGradient,
-    [MetricType.Radiation]: phGradient,
-    [MetricType.Power]: phGradient,
-    [MetricType.CumulativePower]: phGradient,
-    [MetricType.Voltage]: phGradient,
-    [MetricType.Current]: phGradient,
-    [MetricType.Flow]: phGradient,
-    [MetricType.AirlockState]: phGradient,
-};
-const backgroundColorByType = {
-    [MetricType.Ph]: phGradient,
-    [MetricType.AQParticleVolumeConcentration]: phGradient,
-    [MetricType.AQVolumeVolumeConcentration]: phGradient,
-    [MetricType.AQMassVolumeConcentration]: phGradient,
-    [MetricType.WaterLevel]: waterGradient,
-    [MetricType.Temperature]: tempGradient,
-    [MetricType.Humidity]: phGradient,
-    [MetricType.Pressure]: phGradient,
-    [MetricType.Oxygen]: phGradient,
-    [MetricType.CyclesPerHour]: phGradient,
-    [MetricType.Radiation]: phGradient,
-    [MetricType.Power]: phGradient,
-    [MetricType.CumulativePower]: phGradient,
-    [MetricType.Voltage]: phGradient,
-    [MetricType.Current]: phGradient,
-    [MetricType.Flow]: phGradient,
-    [MetricType.AirlockState]: phGradient,
-};
-
 type Point = [number, string | number];
 
-const transformData = (data: Data) => {
+const transformData = (type: MetricType, data: Data) => {
     const result: Point[] = [];
     for (let i = 0; i < data.length; i++) {
-        const { value, timestamp } = data[i];
-        result.push([timestamp, value[0]]);
+        let value = data[i].value;
+        const timestamp = data[i].timestamp;
+        if (type === MetricType.AirlockState) {
+            value = [capitalize(value[0] as string)];
+        }
+        result.push([timestamp, arrayLast(value)!]);
     }
     if (result.length === 1) {
         result.push(result[0]);
@@ -134,7 +101,7 @@ export function MetricHistoryVis({
 }) {
     const currentData = useRef<Point[] | null>(null);
     if (currentData.current === null) {
-        currentData.current = transformData(data);
+        currentData.current = transformData(type, data);
     }
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -147,27 +114,30 @@ export function MetricHistoryVis({
 
     const renderChart = useCallback(() => {
         if (!canvasRef.current) return;
-        const transformedData = transformData(data);
+        const transformedData = transformData(type, data);
         chartRef.current = new ChartJS(canvasRef.current, {
             type: "line",
             data: {
                 datasets: [
                     {
                         data: transformedData,
-                        borderColor: borderColorByType[type],
-                        backgroundColor: backgroundColorByType[type],
+                        borderColor: colorsByType[type],
+                        backgroundColor: colorsByType[type],
                         fill: true,
-                        cubicInterpolationMode: "monotone",
+                        cubicInterpolationMode:
+                            type === MetricType.AirlockState
+                                ? undefined
+                                : "monotone",
                     },
                 ],
             },
-            options: chartOptions(unit),
+            options: chartOptions(type, unit),
         });
     }, [data, type, unit]);
 
     useEffect(() => {
         if (!chartRef.current) return;
-        const transformedData = transformData(data);
+        const transformedData = transformData(type, data);
         let maxMatch = null;
         for (let i = 0; i < currentData.current!.length; i++) {
             let j = 0;

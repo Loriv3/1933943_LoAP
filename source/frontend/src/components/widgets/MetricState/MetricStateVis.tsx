@@ -275,7 +275,7 @@ export function RadiationStateVis({ value, unit }: VisualizerPropsOneValue) {
 
 export function PowerStateVis({ value, unit }: VisualizerPropsOneValue) {
     return (
-        <GenericGaugeStateVis value={value} unit={unit} start={0} end={200} />
+        <GenericGaugeStateVis value={value} unit={unit} start={0} end={300} />
     );
 }
 
@@ -294,7 +294,7 @@ export function VoltageStateVis({ value, unit }: VisualizerPropsOneValue) {
 
 export function CurrentStateVis({ value, unit }: VisualizerPropsOneValue) {
     return (
-        <GenericGaugeStateVis value={value} unit={unit} start={100} end={500} />
+        <GenericGaugeStateVis value={value} unit={unit} start={0} end={600} />
     );
 }
 
