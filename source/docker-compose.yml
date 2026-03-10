@@ -55,6 +55,7 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+
   metrics_service:
     build: ./metrics_service
     container_name: metrics_service
