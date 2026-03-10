@@ -239,11 +239,10 @@ Stateless service. State persistence is delegated entirely to the `redis` contai
 - ENDPOINTS:
 
 | HTTP METHOD | URL | Description | User Stories |
-| ----------- | --- | ----------- | ------------ |
-| GET | `/api/state` | Returns a JSON dictionary of the latest known state of all devices from Redis. | 16, 17, 20 |
-| GET | `/api/state/{device_id}` | Returns the latest state of a specific device (sensor or actuator). | 20 |
-| POST | `/api/actuators/{actuator_id}/control` | Proxies command to simulator, updates Redis cache, and triggers a WebSocket broadcast. | 18, 19 |
-| WS (WebSocket) | `/ws/updates` | Real-time push of normalized JSON payloads directly to connected frontend clients. | 11, 19 |
+| ----------- | --- | ----------- |----------|
+| GET | `/api/actuators/discover` | Retrieves the list of available actuators and their names by querying the cache service. | 17,20    |
+| POST | `/api/actuators/{actuator_id}` | Receives an ON/OFF command from the dashboard and publishes it to the message broker via AMQP. | 18       |
+
 
 - MESSAGE CONTRACTS:
 
