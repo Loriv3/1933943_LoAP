@@ -28,7 +28,7 @@ export const MetricDetail = wrapMetricsInitialized(() => {
     );
 
     return (
-        <Container className="my-3">
+        <Container className="py-3">
             <Row className="g-3">
                 <Col
                     xs={12}

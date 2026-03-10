@@ -99,14 +99,14 @@ export const GroupDetail = wrapMetricsInitialized(() => {
                     : ""
             }`}
         >
-            <Container className="my-3 group-detail">
+            <Container className="py-3">
                 <Row className="g-3">
                     <Col
                         xs={12}
                         lg={6}
                         className="d-flex flex-column justify-content-center"
                     >
-                        <h1 className="text-center m-3">
+                        <h1 className="text-center my-3">
                             <b>{group.name}</b>
                         </h1>
                         <ButtonToolbar className="justify-content-center mb-4 gap-2">

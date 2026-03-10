@@ -17,7 +17,7 @@ import { store } from "./store/store.tsx";
 import { registerChartBasics } from "./utils.tsx";
 import { ActuatorList } from "./components/ActuatorList/ActuatorList.tsx";
 import { ActuatorDetail } from "./components/ActuatorDetail/ActuatorDetail.tsx";
-import { Automations } from "./components/Automations/Automations.tsx";
+import { Automations } from "./components/Automations/AutomationRules.tsx";
 
 registerChartBasics();
 

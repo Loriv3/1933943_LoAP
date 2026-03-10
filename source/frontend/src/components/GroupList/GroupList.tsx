@@ -26,8 +26,8 @@ export const GroupList = wrapMetricsInitialized(() => {
     const dispatch = useDispatch();
 
     return (
-        <Container className="my-3">
-            <h1 className="text-center mb-3"><b>Metric Groups</b></h1>
+        <Container className="py-3">
+            <h1 className="text-center my-3"><b>Metric Groups</b></h1>
             <Row className="g-3">
                 {...Object.values(groups).map((group) => {
                     const currentWidgets: DashboardWidgetPath[] = [];

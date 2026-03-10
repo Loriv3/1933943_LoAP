@@ -12,10 +12,14 @@ export interface AutomationRule {
     groupId: string;
     metricId: string;
     operator: AutomationRuleOperator;
-    compareValue: number;
+    compareValue: string | number;
     unit: MetricUnit;
     actuatorId: string;
     actuatorState: boolean;
+}
+
+export interface SavedAutomationRule extends AutomationRule {
+    id: string;
 }
 
 const operatorStrings = {
