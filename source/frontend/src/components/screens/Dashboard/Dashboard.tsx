@@ -73,11 +73,11 @@ export function Dashboard() {
     const dashboardWidgets = useDashboardWidgetsOrdered();
 
     return (
-        <Container fluid className="my-3">
+        <Container className="my-3">
             <Row className="g-3">
                 {dashboardWidgets.length ? (
                     dashboardWidgets.map((widget) => (
-                        <Col xs={12} xl={2}>
+                        <Col xs={12} xl={6}>
                             {widgetToVis(widget)}
                         </Col>
                     ))
