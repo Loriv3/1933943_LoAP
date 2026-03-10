@@ -204,9 +204,9 @@ export function formatValueUnitSplit(value: string | number, unit: MetricUnit) {
         case "uSv/h":
             return [(value as number).toFixed(2), "uSv/h"];
         case "kW":
-            return [((value as number) / 1000).toFixed(2), "kW"];
+            return [(value as number).toFixed(2), "kW"];
         case "kWh":
-            return [((value as number) / 1000).toFixed(2), "kWh"];
+            return [(value as number).toFixed(2), "kWh"];
         case "V":
             return [(value as number).toFixed(2), "V"];
         case "A":
@@ -241,9 +241,9 @@ export function formatValueUnit(value: string | number, unit: MetricUnit) {
         case "uSv/h":
             return `${(value as number).toFixed(2)} uSv/h`;
         case "kW":
-            return `${((value as number) / 1000).toFixed(2)} kW`;
+            return `${(value as number).toFixed(2)} kW`;
         case "kWh":
-            return `${((value as number) / 1000).toFixed(2)} kWh`;
+            return `${(value as number).toFixed(2)} kWh`;
         case "V":
             return `${(value as number).toFixed(2)} V`;
         case "A":
@@ -283,4 +283,8 @@ export function formatTime(seconds: number) {
     }
     result += `${seconds} s`;
     return result;
+}
+
+export function clamp(value: number, min: number, max: number) {
+    return value < min ? min : value > max ? max : value;
 }

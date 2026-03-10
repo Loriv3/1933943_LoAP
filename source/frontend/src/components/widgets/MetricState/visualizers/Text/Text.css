@@ -1,0 +1,14 @@
+.text-metric-value {
+    text-align: center;
+    line-height: 1em;
+}
+
+.text-metric-value-value {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.text-metric-value-unit {
+    font-size: 0.8em;
+    opacity: 0.5;
+}

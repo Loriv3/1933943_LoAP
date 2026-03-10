@@ -2,7 +2,7 @@ import type {
     AutomationRule,
     AutomationRuleOperator,
     SavedAutomationRule,
-} from "../components/Automations/AutomationRule";
+} from "../components/screens/Automations/AutomationRule";
 import type { MetricUnit } from "../store/metrics/MetricHistory";
 
 export interface ApiAutomationRule {

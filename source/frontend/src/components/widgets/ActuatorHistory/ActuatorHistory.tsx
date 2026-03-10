@@ -9,7 +9,7 @@ import {
 import { Button, Card, Collapse, Nav } from "react-bootstrap";
 import { addWidget, removeWidget } from "../../../store/dashboard/dashboard";
 import { NavLink } from "react-router";
-import { ToggleHistoryVis } from "../../HistoryVis/ToggleHistoryVis";
+import { ToggleHistoryVis } from "./ToggleHistoryVis";
 
 export function ActuatorHistory({
     actuatorId,

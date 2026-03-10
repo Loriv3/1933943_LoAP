@@ -1,7 +1,7 @@
 import { Button, Card, Collapse, Nav } from "react-bootstrap";
 import { useState } from "react";
 import { useAppSelector, useHasDashboardWidget } from "../../../store/store";
-import { MetricHistoryVis } from "../../HistoryVis/MetricHistoryVis";
+import { MetricHistoryVis } from "./MetricHistoryVis";
 import {
     DashboardWidgetVariant,
     type DashboardWidgetPath,

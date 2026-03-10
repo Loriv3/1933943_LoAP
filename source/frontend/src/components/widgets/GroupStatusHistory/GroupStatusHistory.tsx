@@ -1,7 +1,7 @@
 import { Button, Card, Collapse, Nav } from "react-bootstrap";
 import { useState } from "react";
 import { useAppSelector, useHasDashboardWidget } from "../../../store/store";
-import { StatusHistoryVis } from "../../HistoryVis/StatusHistoryVis";
+import { StatusHistoryVis } from "./StatusHistoryVis";
 import { useDispatch } from "react-redux";
 import { addWidget, removeWidget } from "../../../store/dashboard/dashboard";
 import {

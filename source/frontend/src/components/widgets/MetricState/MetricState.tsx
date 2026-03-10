@@ -1,7 +1,7 @@
 import { Button, Card, Collapse, Nav } from "react-bootstrap";
 import { arrayLast, formatTime, formatValueUnit, useTimer } from "../../../utils";
 import { useState } from "react";
-import { visualizerTypes } from "./visualizerTypes";
+import { visualizersByMetricType } from "./visualizersByMetricType";
 import { metricTypeIcons } from "../../../metricTypeIcons";
 import { NavLink } from "react-router";
 import { useDispatch } from "react-redux";
@@ -28,7 +28,7 @@ export function MetricState({
     );
 
     const [isOpen, setOpen] = useState(true);
-    const Visualizer = visualizerTypes[metric.type];
+    const Visualizer = visualizersByMetricType[metric.type];
     const value = arrayLast(metric.measurements)?.value;
 
     const lastUpdate = metric.measurements.length

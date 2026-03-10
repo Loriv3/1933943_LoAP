@@ -1,0 +1,20 @@
+.humidity-scale {
+    position: relative;
+    width: 1em;
+    height: 4em;
+    border: .075em solid #5050a0;
+    border-radius: .1em;
+    overflow: hidden;
+}
+
+.humidity-scale-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(100% * var(--value));
+    background: linear-gradient(var(--end-color) 40%, var(--start-color));
+    background-size: 1em 4em;
+    background-position: bottom;
+    transition: height 0.1s ease-in-out;
+}

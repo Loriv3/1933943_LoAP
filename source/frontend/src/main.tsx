@@ -8,16 +8,16 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./components/App/App.tsx";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
-import { Dashboard } from "./components/Dashboard/Dashboard.tsx";
-import { GroupList } from "./components/GroupList/GroupList.tsx";
-import { GroupDetail } from "./components/GroupDetail/GroupDetail.tsx";
-import { MetricDetail } from "./components/MetricDetail/MetricDetail.tsx";
+import { Dashboard } from "./components/screens/Dashboard/Dashboard.tsx";
+import { GroupList } from "./components/screens/GroupList/GroupList.tsx";
+import { GroupDetail } from "./components/screens/GroupDetail/GroupDetail.tsx";
+import { MetricDetail } from "./components/screens/MetricDetail/MetricDetail.tsx";
 import { Provider } from "react-redux";
 import { store } from "./store/store.tsx";
 import { registerChartBasics } from "./utils.tsx";
-import { ActuatorList } from "./components/ActuatorList/ActuatorList.tsx";
-import { ActuatorDetail } from "./components/ActuatorDetail/ActuatorDetail.tsx";
-import { Automations } from "./components/Automations/AutomationRules.tsx";
+import { ActuatorList } from "./components/screens/ActuatorList/ActuatorList.tsx";
+import { ActuatorDetail } from "./components/screens/ActuatorDetail/ActuatorDetail.tsx";
+import { Automations } from "./components/screens/Automations/AutomationRules.tsx";
 
 registerChartBasics();
 
