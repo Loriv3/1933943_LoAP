@@ -67,7 +67,6 @@ function dataYToPixelY<TType extends ChartType>(
     const dataHeightY = ctx.chart.scales.y.max - ctx.chart.scales.y.min;
     const canvasEndY = ctx.chart.chartArea.bottom;
     const canvasHeightY = ctx.chart.chartArea.height;
-    console.log(value, dataStartY, dataHeightY, canvasEndY, canvasHeightY);
     return canvasEndY - ((value - dataStartY) / dataHeightY) * canvasHeightY;
 }
 
@@ -85,15 +84,6 @@ export function binaryGradient<TType extends ChartType = "line">({
     return (ctx) => {
         if (!ctx.chart.chartArea) return startColor;
         const gradient = ctx.chart.ctx.createLinearGradient(
-            0,
-            dataYToPixelY(ctx, start ?? ctx.chart.scales.y.min),
-            0,
-            dataYToPixelY(ctx, end ?? ctx.chart.scales.y.max)
-        );
-        console.log(
-            gradient,
-            start,
-            end,
             0,
             dataYToPixelY(ctx, start ?? ctx.chart.scales.y.min),
             0,
