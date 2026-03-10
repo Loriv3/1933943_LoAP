@@ -2,6 +2,8 @@ package marsops.automation.web;
 
 import marsops.automation.domain.FiringRecord;
 import marsops.automation.repo.FiringRepository;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/rule-firings")
+@CrossOrigin
 public class RuleFiringController {
 
     private final FiringRepository firingRepository;

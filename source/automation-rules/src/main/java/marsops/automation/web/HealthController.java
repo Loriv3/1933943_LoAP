@@ -3,12 +3,15 @@ package marsops.automation.web;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
 @RestController
+@CrossOrigin
 public class HealthController {
 
     private final ConnectionFactory connectionFactory;
