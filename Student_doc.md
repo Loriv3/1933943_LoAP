@@ -451,16 +451,13 @@ SQLite database persisted on Docker volume:
 ## CONTAINER_NAME: frontend
 
 ### DESCRIPTION:
-
+Nginx server that makes the frontend available directly from the deployed system. It uses a standard Docker nginx image configured to account for PWA in-browser routing.
 
 ### USER STORIES:
-
+2, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
 
 ### PORTS:
-
+- `8085`: Frontend (accessed directly from the root path)
 
 ### PERSISTENCE EVALUATION
-
-
-### EXTERNAL SERVICES CONNECTIONS
-
+All the service does is serve static files resulting from the frontend's build pipeline and built into the image; therefore, it doesn't persist any other data.
