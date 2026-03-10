@@ -1,87 +1,30 @@
 package marsops.automation.web.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import marsops.automation.domain.Operator;
 
+@Data
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CreateRuleRequest {
-
-    private Boolean enabled = true;
-
-    @NotBlank
-    @JsonProperty("sensor_name")
-    private String sensorName;
+    private final boolean enabled = true;
 
     @NotBlank
-    private String operator;
-
+    private final String groupId;
+    @NotBlank
+    private final String metricId;
+    @NotBlank
+    private final Operator operator;
     @NotNull
-    @JsonProperty("threshold_value")
-    private Double thresholdValue;
-
-    private String unit;
-
+    private final Object compareValue;
+    @NotNull
+    private final String unit;
     @NotBlank
-    @JsonProperty("actuator_name")
-    private String actuatorName;
-
-    @NotBlank
-    @JsonProperty("target_state")
-    private String targetState;
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getSensorName() {
-        return sensorName;
-    }
-
-    public void setSensorName(String sensorName) {
-        this.sensorName = sensorName;
-    }
-
-    public String getOperator() {
-        return operator;
-    }
-
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
-
-    public Double getThresholdValue() {
-        return thresholdValue;
-    }
-
-    public void setThresholdValue(Double thresholdValue) {
-        this.thresholdValue = thresholdValue;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
-
-    public String getActuatorName() {
-        return actuatorName;
-    }
-
-    public void setActuatorName(String actuatorName) {
-        this.actuatorName = actuatorName;
-    }
-
-    public String getTargetState() {
-        return targetState;
-    }
-
-    public void setTargetState(String targetState) {
-        this.targetState = targetState;
-    }
+    private final String actuatorId;
+    @NotNull
+    private final boolean actuatorState;
 }

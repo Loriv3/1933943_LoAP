@@ -1,19 +1,19 @@
 package marsops.automation.service;
 
 import marsops.automation.domain.ActuatorCommand;
-import marsops.automation.domain.Operator;
+import marsops.automation.domain.FiringRecord;
 import marsops.automation.domain.Rule;
-import marsops.automation.domain.StateEvent;
-import marsops.automation.domain.TargetState;
+import marsops.automation.domain.MetricGroupStateEvent;
 import marsops.automation.repo.FiringRepository;
 import marsops.automation.repo.RuleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,106 +26,86 @@ public class RuleEngineService {
     private final RuleRepository ruleRepository;
     private final FiringRepository firingRepository;
     private final JmsTemplate jmsTemplate;
-    private final String queueCommands;
+    private final @NonNull String queueCommands;
 
-    private final Map<String, TargetState> actuatorStateCache = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> actuatorStateCache = new ConcurrentHashMap<>();
 
     public RuleEngineService(RuleRepository ruleRepository,
-                             FiringRepository firingRepository,
-                             JmsTemplate jmsTemplate,
-                             @Value("${app.jms.queueCommands}") String queueCommands) {
+            FiringRepository firingRepository,
+            JmsTemplate jmsTemplate,
+            @Value("${app.jms.queueCommands}") @NonNull String queueCommands) {
         this.ruleRepository = ruleRepository;
         this.firingRepository = firingRepository;
         this.jmsTemplate = jmsTemplate;
         this.queueCommands = queueCommands;
     }
 
-    public void processStateEvent(StateEvent event) {
-        if (!isValidForRuleEngine(event)) {
-            LOGGER.debug("Ignoring invalid StateEvent payload");
-            return;
-        }
+    public void processStateEvent(MetricGroupStateEvent event) {
 
-        List<Rule> rules = ruleRepository.findEnabledBySensorName(event.getSensorName());
-        if (rules.isEmpty()) {
-            LOGGER.info("Event processed sensor={} value={} unit={} enabledRules=0 firedCommands=0",
-                event.getSensorName(),
-                event.getValue(),
-                event.getUnit());
-            return;
-        }
+        LOGGER.info("Processing metric group state event: {}", event);
 
         int firedCommands = 0;
-        for (Rule rule : rules) {
-            if (!isUnitCompatible(rule, event)) {
-                continue;
+
+        for (var metric : event.getMetrics()) {
+            List<Rule> rules = ruleRepository.findEnabledByMetric(event.getGroupId(), metric.getId());
+            for (var rule : rules) {
+                Boolean wasOn = actuatorStateCache.get(rule.getActuatorId());
+                boolean willBeOn = rule.isActuatorState();
+                if (((Boolean) willBeOn).equals(wasOn)) {
+                    LOGGER.info("Skipping unnecessary rule for actuator={} state={}", rule.getActuatorId(),
+                            willBeOn);
+                    continue;
+                }
+
+                for (var value : metric.getValue()) {
+                    // Check for a match in both unit and value type
+                    if (!value.getUnit().equals(rule.getUnit())) {
+                        continue;
+                    }
+                    if (value.getValue() instanceof String value_
+                            && rule.getCompareValue() instanceof String compareValue_) {
+                        if (!rule.getOperator().evaluateString(value_, compareValue_)) {
+                            continue;
+                        }
+                    } else if (value.getValue() instanceof Double value_
+                            && rule.getCompareValue() instanceof Double compareValue_) {
+                        if (!rule.getOperator().evaluateDouble(value_, compareValue_)) {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+
+                    // The rule should run
+                    LOGGER.info("Rule conditions satisfied: {}", rule);
+
+                    ActuatorCommand command = new ActuatorCommand(
+                            new Date(),
+                            rule.getActuatorId(),
+                            willBeOn,
+                            rule.getId(),
+                            new ActuatorCommand.Reason(rule.getGroupId(), rule.getMetricId(), value.getValue(),
+                                    value.getUnit(), rule.getOperator(), rule.getCompareValue()));
+
+                    jmsTemplate.convertAndSend(queueCommands, command);
+                    firingRepository.save(new FiringRecord(rule, value.getValue(), value.getUnit()));
+                    firedCommands++;
+                    LOGGER.info("Command sent to queue={} actuator={} state={} ruleId={}",
+                            queueCommands,
+                            rule.getActuatorId(),
+                            willBeOn,
+                            rule.getId());
+                }
             }
-
-            Operator operator = Operator.fromSymbol(rule.getOperator());
-            if (!operator.evaluate(event.getValue(), rule.getThresholdValue())) {
-                continue;
-            }
-
-            TargetState targetState = TargetState.from(rule.getTargetState());
-            TargetState previousState = actuatorStateCache.get(rule.getActuatorName());
-            if (previousState == targetState) {
-                LOGGER.debug("Skipping duplicate command for actuator={} state={}", rule.getActuatorName(), targetState);
-                continue;
-            }
-
-            ActuatorCommand command = new ActuatorCommand(
-                Instant.now().toString(),
-                rule.getActuatorName(),
-                targetState.name(),
-                rule.getId(),
-                new ActuatorCommand.Reason(
-                    event.getSensorName(),
-                    event.getValue(),
-                    rule.getOperator(),
-                    rule.getThresholdValue()
-                )
-            );
-
-            jmsTemplate.convertAndSend(queueCommands, command);
-            actuatorStateCache.put(rule.getActuatorName(), targetState);
-            firingRepository.save(rule, event);
-            firedCommands++;
-            LOGGER.info("Command sent to queue={} actuator={} state={} ruleId={}",
-                queueCommands,
-                rule.getActuatorName(),
-                targetState,
-                rule.getId());
+            LOGGER.info("Processed metric {}", metric);
         }
 
-        LOGGER.info("Event processed sensor={} value={} unit={} enabledRules={} firedCommands={}",
-            event.getSensorName(),
-            event.getValue(),
-            event.getUnit(),
-            rules.size(),
-            firedCommands);
+        LOGGER.info("Processed metric group state event with {} firings: {}", firedCommands, event);
     }
 
-    public void applyActuatorStateUpdate(String actuatorName, TargetState targetState, String sourceQueue) {
-        if (actuatorName == null || actuatorName.isBlank() || targetState == null) {
-            LOGGER.debug("Ignoring invalid actuator state update actuator={} state={} source={}", actuatorName, targetState, sourceQueue);
-            return;
-        }
-
-        actuatorStateCache.put(actuatorName, targetState);
-        LOGGER.info("Actuator state update consumed source={} actuator={} state={}", sourceQueue, actuatorName, targetState);
-    }
-
-    private boolean isValidForRuleEngine(StateEvent event) {
-        if (event == null || event.getSensorName() == null || event.getSensorName().isBlank() || event.getValue() == null) {
-            return false;
-        }
-        return event.getKind() == null || "sensor".equalsIgnoreCase(event.getKind());
-    }
-
-    private boolean isUnitCompatible(Rule rule, StateEvent event) {
-        if (rule.getUnit() == null || rule.getUnit().isBlank()) {
-            return true;
-        }
-        return event.getUnit() != null && rule.getUnit().equalsIgnoreCase(event.getUnit());
+    public void applyActuatorStateUpdate(String actuatorId, boolean isOn) {
+        actuatorStateCache.put(actuatorId, isOn);
+        LOGGER.info("Actuator state update consumed actuator={} state={}", actuatorId,
+                isOn);
     }
 }

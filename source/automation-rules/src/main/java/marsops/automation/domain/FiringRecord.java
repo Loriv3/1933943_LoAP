@@ -1,64 +1,31 @@
 package marsops.automation.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
+import java.util.UUID;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+@Data
+@RequiredArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class FiringRecord {
+    private final UUID id;
+    private final UUID ruleId;
+    private final Date firedAt;
+    private final String groupId;
+    private final String metricId;
+    private final Object metricValue;
+    private final String metricUnit;
+    private final String actuatorId;
+    private final boolean actuatorState;
 
-    private final String id;
-    private final String ruleId;
-    private final String firedAt;
-    private final String sensorName;
-    private final double sensorValue;
-    private final String actuatorName;
-    private final String targetState;
-
-    public FiringRecord(String id,
-                        String ruleId,
-                        String firedAt,
-                        String sensorName,
-                        double sensorValue,
-                        String actuatorName,
-                        String targetState) {
-        this.id = id;
-        this.ruleId = ruleId;
-        this.firedAt = firedAt;
-        this.sensorName = sensorName;
-        this.sensorValue = sensorValue;
-        this.actuatorName = actuatorName;
-        this.targetState = targetState;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    @JsonProperty("rule_id")
-    public String getRuleId() {
-        return ruleId;
-    }
-
-    @JsonProperty("fired_at")
-    public String getFiredAt() {
-        return firedAt;
-    }
-
-    @JsonProperty("sensor_name")
-    public String getSensorName() {
-        return sensorName;
-    }
-
-    @JsonProperty("sensor_value")
-    public double getSensorValue() {
-        return sensorValue;
-    }
-
-    @JsonProperty("actuator_name")
-    public String getActuatorName() {
-        return actuatorName;
-    }
-
-    @JsonProperty("target_state")
-    public String getTargetState() {
-        return targetState;
+    public FiringRecord(Rule rule, Object metricValue, String metricUnit) {
+        this(UUID.randomUUID(), rule.getId(), new Date(), rule.getGroupId(), rule.getMetricId(), metricValue,
+                metricUnit,
+                rule.getActuatorId(), rule.isActuatorState());
     }
 }

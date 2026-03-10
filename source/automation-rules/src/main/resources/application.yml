@@ -18,9 +18,9 @@ spring:
 
 app:
   jms:
-    topicState: sensor.events
+    topicMetricEvents: sensor.events
+    topicActuatorStates: actuator.states
     queueCommands: actuator.commands
-    queueActuatorStates: actuator.commands
     topicRuleFired: marsops.rules.fired
 
 logging:

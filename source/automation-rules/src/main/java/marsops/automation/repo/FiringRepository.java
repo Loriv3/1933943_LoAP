@@ -1,12 +1,9 @@
 package marsops.automation.repo;
 
 import marsops.automation.domain.FiringRecord;
-import marsops.automation.domain.Rule;
-import marsops.automation.domain.StateEvent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,40 +16,46 @@ public class FiringRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void save(Rule rule, StateEvent event) {
+    public void save(FiringRecord record) {
         jdbcTemplate.update(
-            """
-                INSERT INTO rule_firings (id, rule_id, fired_at, sensor_name, sensor_value, actuator_name, target_state)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-            UUID.randomUUID().toString(),
-            rule.getId(),
-            Instant.now().toString(),
-            event.getSensorName(),
-            event.getValue(),
-            rule.getActuatorName(),
-            rule.getTargetState()
-        );
+                """
+                        INSERT INTO rule_firings (id, rule_id, fired_at, group_id, metric_id, metric_value_str, metric_value_double, metric_unit, actuator_id, actuator_state)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                record.getId().toString(),
+                record.getRuleId().toString(),
+                record.getFiredAt(),
+                record.getGroupId(),
+                record.getMetricId(),
+                record.getMetricValue() instanceof String s ? s : null,
+                record.getMetricValue() instanceof Double d ? d : null,
+                record.getMetricUnit(),
+                record.getActuatorId(),
+                record.isActuatorState());
     }
 
     public List<FiringRecord> listRecent(int limit) {
         return jdbcTemplate.query(
-            """
-                SELECT id, rule_id, fired_at, sensor_name, sensor_value, actuator_name, target_state
-                FROM rule_firings
-                ORDER BY fired_at DESC
-                LIMIT ?
-                """,
-            (rs, rowNum) -> new FiringRecord(
-                rs.getString("id"),
-                rs.getString("rule_id"),
-                rs.getString("fired_at"),
-                rs.getString("sensor_name"),
-                rs.getDouble("sensor_value"),
-                rs.getString("actuator_name"),
-                rs.getString("target_state")
-            ),
-            limit
-        );
+                """
+                        SELECT id, rule_id, fired_at, group_id, metric_id, metric_value_str, metric_value_double, actuator_id, actuator_state
+                        FROM rule_firings
+                        ORDER BY fired_at DESC
+                        LIMIT ?
+                        """,
+                (rs, rowNum) -> {
+                    String metricValueStr = rs.getString("metric_value_str");
+                    Double metricValueDouble = rs.getDouble("metric_value_double");
+                    return new FiringRecord(
+                            UUID.fromString(rs.getString("id")),
+                            UUID.fromString(rs.getString("rule_id")),
+                            rs.getDate("fired_at"),
+                            rs.getString("group_id"),
+                            rs.getString("metric_id"),
+                            metricValueStr == null ? metricValueDouble : metricValueStr,
+                            rs.getString("metric_unit"),
+                            rs.getString("actuator_id"),
+                            rs.getBoolean("actuator_state"));
+                },
+                limit);
     }
 }

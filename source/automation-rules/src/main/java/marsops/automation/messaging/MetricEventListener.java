@@ -1,8 +1,8 @@
 package marsops.automation.messaging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import marsops.automation.domain.ActuatorStateEvent;
+import marsops.automation.domain.MetricGroupStateEvent;
 import marsops.automation.service.RuleEngineService;
 
 import java.nio.charset.Charset;
@@ -13,41 +13,41 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ActuatorStateListener {
+public class MetricEventListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ActuatorStateListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetricEventListener.class);
 
     private final RuleEngineService ruleEngineService;
     private final ObjectMapper objectMapper;
 
-    public ActuatorStateListener(RuleEngineService ruleEngineService,
-            ObjectMapper objectMapper) {
+    public MetricEventListener(RuleEngineService ruleEngineService, ObjectMapper objectMapper) {
         this.ruleEngineService = ruleEngineService;
         this.objectMapper = objectMapper;
     }
 
-    @JmsListener(destination = "${app.jms.topicActuatorStates}", containerFactory = "topicListenerFactory")
+    @JmsListener(destination = "${app.jms.topicMetricEvents}", containerFactory = "topicListenerFactory")
     public void onEventTopic(byte[] payload) {
         handleEvent(payload);
     }
 
-    @JmsListener(destination = "${app.jms.topicActuatorStates}", containerFactory = "queueListenerFactory")
+    @JmsListener(destination = "${app.jms.topicMetricEvents}", containerFactory = "queueListenerFactory")
     public void onEventQueue(byte[] payload) {
         handleEvent(payload);
     }
 
     private void handleEvent(byte[] payload) {
         if (payload == null || payload.length == 0) {
-            LOGGER.debug("Ignoring empty ActuatorStateEvent payload");
+            LOGGER.debug("Ignoring empty MetricGroupStateEvent payload");
             return;
         }
 
-        LOGGER.info("ActuatorStateEvent payload received size={}", payload.length);
+        LOGGER.info("MetricGroupStateEvent payload received size={}", payload.length);
+
         try {
-            ActuatorStateEvent event = objectMapper.readValue(payload, ActuatorStateEvent.class);
-            ruleEngineService.applyActuatorStateUpdate(event.getActuatorId(), event.isOn());
+            MetricGroupStateEvent event = objectMapper.readValue(payload, MetricGroupStateEvent.class);
+            ruleEngineService.processStateEvent(event);
         } catch (Exception exception) {
-            LOGGER.warn("Ignoring malformed ActuatorStateEvent payload: {}, exception: {}",
+            LOGGER.warn("Malformed ActuatorStateEvent payload: {}, exception: {}",
                     abbreviate(new String(payload, Charset.forName("UTF-8"))), exception);
         }
     }

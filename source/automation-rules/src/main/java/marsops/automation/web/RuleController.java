@@ -1,8 +1,6 @@
 package marsops.automation.web;
 
-import marsops.automation.domain.Operator;
 import marsops.automation.domain.Rule;
-import marsops.automation.domain.TargetState;
 import marsops.automation.repo.RuleRepository;
 import marsops.automation.web.dto.CreateRuleRequest;
 import marsops.automation.web.dto.SetEnabledRequest;
@@ -26,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/rules")
@@ -49,63 +48,56 @@ public class RuleController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Rule createRule(@Valid @RequestBody CreateRuleRequest request) {
-        validateDomain(request);
         Rule createdRule = ruleRepository.create(
-            Boolean.TRUE.equals(request.getEnabled()),
-            request.getSensorName(),
-            request.getOperator(),
-            request.getThresholdValue(),
-            request.getUnit(),
-            request.getActuatorName(),
-            request.getTargetState().toUpperCase()
-        );
-        LOGGER.info("[AUTOMATION-AUDIT] createRule id={} sensor={} operator={} threshold={} actuator={} targetState={} enabled={}",
-            createdRule.getId(),
-            createdRule.getSensorName(),
-            createdRule.getOperator(),
-            createdRule.getThresholdValue(),
-            createdRule.getActuatorName(),
-            createdRule.getTargetState(),
-            createdRule.isEnabled());
+                request.isEnabled(),
+                request.getGroupId(),
+                request.getMetricId(),
+                request.getOperator(),
+                request.getCompareValue(),
+                request.getUnit(),
+                request.getActuatorId(),
+                request.isActuatorState());
+        LOGGER.info("[AUTOMATION-AUDIT] createRule {}", createdRule);
         return createdRule;
     }
 
+    @GetMapping("/{id}")
+    public Rule getRule(@PathVariable("id") UUID id) {
+        Rule rule = ruleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
+        LOGGER.info("[AUTOMATION-AUDIT] getRule id={}", id);
+        return rule;
+    }
+
     @PutMapping("/{id}")
-    public Rule updateRule(@PathVariable("id") String id, @Valid @RequestBody CreateRuleRequest request) {
-        validateDomain(request);
+    public Rule updateRule(@PathVariable("id") UUID id, @Valid @RequestBody CreateRuleRequest request) {
         Rule updatedRule = ruleRepository.update(
                 id,
-                Boolean.TRUE.equals(request.getEnabled()),
-                request.getSensorName(),
+                request.isEnabled(),
+                request.getGroupId(),
+                request.getMetricId(),
                 request.getOperator(),
-                request.getThresholdValue(),
+                request.getCompareValue(),
                 request.getUnit(),
-                request.getActuatorName(),
-                request.getTargetState().toUpperCase()
-            )
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
-        LOGGER.info("[AUTOMATION-AUDIT] updateRule id={} sensor={} operator={} threshold={} actuator={} targetState={} enabled={}",
-            updatedRule.getId(),
-            updatedRule.getSensorName(),
-            updatedRule.getOperator(),
-            updatedRule.getThresholdValue(),
-            updatedRule.getActuatorName(),
-            updatedRule.getTargetState(),
-            updatedRule.isEnabled());
+                request.getActuatorId(),
+                request.isActuatorState())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
+        LOGGER.info(
+                "[AUTOMATION-AUDIT] updateRule id={} rule={}", updatedRule);
         return updatedRule;
     }
 
     @PatchMapping("/{id}/enabled")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnabled(@PathVariable("id") String id, @Valid @RequestBody SetEnabledRequest request) {
+    public void setEnabled(@PathVariable("id") UUID id, @Valid @RequestBody SetEnabledRequest request) {
         ruleRepository.setEnabled(id, request.getEnabled())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found"));
         LOGGER.info("[AUTOMATION-AUDIT] setEnabled id={} enabled={}", id, request.getEnabled());
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRule(@PathVariable("id") String id) {
+    public void deleteRule(@PathVariable("id") UUID id) {
         if (!ruleRepository.deleteById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule not found");
         }
@@ -124,10 +116,5 @@ public class RuleController {
     public Map<String, String> handleIllegalArgument(IllegalArgumentException exception) {
         LOGGER.warn("[AUTOMATION-AUDIT] domainValidationError message={}", exception.getMessage());
         return Map.of("error", exception.getMessage());
-    }
-
-    private void validateDomain(CreateRuleRequest request) {
-        Operator.fromSymbol(request.getOperator());
-        TargetState.from(request.getTargetState());
     }
 }

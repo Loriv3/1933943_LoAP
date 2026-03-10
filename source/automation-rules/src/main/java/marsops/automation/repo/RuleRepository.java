@@ -1,32 +1,38 @@
 package marsops.automation.repo;
 
+import marsops.automation.domain.Operator;
 import marsops.automation.domain.Rule;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public class RuleRepository {
-
     private final JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Rule> ruleRowMapper = (rs, rowNum) -> new Rule(
-        rs.getString("id"),
-        rs.getInt("enabled") == 1,
-        rs.getString("sensor_name"),
-        rs.getString("operator"),
-        rs.getDouble("threshold_value"),
-        rs.getString("unit"),
-        rs.getString("actuator_name"),
-        rs.getString("target_state"),
-        rs.getString("created_at"),
-        rs.getString("updated_at")
-    );
+    private final @NonNull RowMapper<Rule> ruleRowMapper = (rs, rowNum) -> {
+        String compareValueStr = rs.getString("compare_value_str");
+        Double compareValueDouble = rs.getDouble("compare_value_double");
+        return new Rule(
+                UUID.fromString(rs.getString("id")),
+                rs.getBoolean("enabled"),
+                rs.getDate("created_at"),
+                rs.getDate("updated_at"),
+                rs.getString("group_id"),
+                rs.getString("metric_id"),
+                Operator.forValue(rs.getString("operator")),
+                compareValueStr == null ? compareValueDouble : compareValueStr,
+                rs.getString("unit"),
+                rs.getString("actuator_id"),
+                rs.getBoolean("actuator_state"));
+    };
 
     public RuleRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -36,55 +42,58 @@ public class RuleRepository {
         return jdbcTemplate.query("SELECT * FROM rules ORDER BY created_at DESC", ruleRowMapper);
     }
 
-    public Optional<Rule> findById(String id) {
-        List<Rule> rows = jdbcTemplate.query("SELECT * FROM rules WHERE id = ?", ruleRowMapper, id);
+    public Optional<Rule> findById(UUID id) {
+        List<Rule> rows = jdbcTemplate.query("SELECT * FROM rules WHERE id = ?", ruleRowMapper, id.toString());
         return rows.stream().findFirst();
     }
 
-    public List<Rule> findEnabledBySensorName(String sensorName) {
+    public List<Rule> findEnabledByMetric(String groupId, String metricId) {
         return jdbcTemplate.query(
-            "SELECT * FROM rules WHERE sensor_name = ? AND enabled = 1",
-            ruleRowMapper,
-            sensorName
-        );
+                "SELECT * FROM rules WHERE group_id = ? AND metric_id = ? AND enabled = 1",
+                ruleRowMapper,
+                groupId,
+                metricId);
     }
 
     public Rule create(boolean enabled,
-                       String sensorName,
-                       String operator,
-                       double thresholdValue,
-                       String unit,
-                       String actuatorName,
-                       String targetState) {
+            String groupId,
+            String metricId,
+            Operator operator,
+            Object compareValue,
+            String unit,
+            String actuatorId,
+            boolean actuatorState) {
+        UUID id = UUID.randomUUID();
         String now = Instant.now().toString();
-        String id = UUID.randomUUID().toString();
         jdbcTemplate.update(
-            """
-                INSERT INTO rules (id, enabled, sensor_name, operator, threshold_value, unit, actuator_name, target_state, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-            id,
-            enabled ? 1 : 0,
-            sensorName,
-            operator,
-            thresholdValue,
-            unit,
-            actuatorName,
-            targetState,
-            now,
-            now
-        );
+                """
+                        INSERT INTO rules (id, enabled, created_at, updated_at, group_id, metric_id, operator, compare_value_str, compare_value_double, unit, actuator_id, actuator_state)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                id.toString(),
+                enabled,
+                now,
+                now,
+                groupId,
+                metricId,
+                operator.toValue(),
+                compareValue instanceof String s ? s : null,
+                compareValue instanceof Double d ? d : null,
+                unit,
+                actuatorId,
+                actuatorState);
         return findById(id).orElseThrow();
     }
 
-    public Optional<Rule> update(String id,
-                                 boolean enabled,
-                                 String sensorName,
-                                 String operator,
-                                 double thresholdValue,
-                                 String unit,
-                                 String actuatorName,
-                                 String targetState) {
+    public Optional<Rule> update(UUID id,
+            boolean enabled,
+            String groupId,
+            String metricId,
+            Operator operator,
+            Object compareValue,
+            String unit,
+            String actuatorId,
+            boolean actuatorState) {
         Optional<Rule> existing = findById(id);
         if (existing.isEmpty()) {
             return Optional.empty();
@@ -92,38 +101,38 @@ public class RuleRepository {
 
         String now = Instant.now().toString();
         jdbcTemplate.update(
-            """
-                UPDATE rules
-                SET enabled = ?, sensor_name = ?, operator = ?, threshold_value = ?, unit = ?, actuator_name = ?, target_state = ?, updated_at = ?
-                WHERE id = ?
-                """,
-            enabled ? 1 : 0,
-            sensorName,
-            operator,
-            thresholdValue,
-            unit,
-            actuatorName,
-            targetState,
-            now,
-            id
-        );
+                """
+                        UPDATE rules
+                        SET enabled = ?, updated_at = ?, group_id = ?, metric_id = ?, operator = ?, compare_value_str = ?, compare_value_double = ?, unit = ?, actuator_id = ?, actuator_state = ?
+                        WHERE id = ?
+                        """,
+                enabled,
+                now,
+                groupId,
+                metricId,
+                operator.toValue(),
+                compareValue instanceof String s ? s : null,
+                compareValue instanceof Double d ? d : null,
+                unit,
+                actuatorId,
+                actuatorState,
+                id.toString());
         return findById(id);
     }
 
-    public Optional<Rule> setEnabled(String id, boolean enabled) {
+    public Optional<Rule> setEnabled(UUID id, boolean enabled) {
         int updated = jdbcTemplate.update(
-            "UPDATE rules SET enabled = ?, updated_at = ? WHERE id = ?",
-            enabled ? 1 : 0,
-            Instant.now().toString(),
-            id
-        );
+                "UPDATE rules SET enabled = ?, updated_at = ? WHERE id = ?",
+                enabled,
+                new Date(),
+                id.toString());
         if (updated == 0) {
             return Optional.empty();
         }
         return findById(id);
     }
 
-    public boolean deleteById(String id) {
-        return jdbcTemplate.update("DELETE FROM rules WHERE id = ?", id) > 0;
+    public boolean deleteById(UUID id) {
+        return jdbcTemplate.update("DELETE FROM rules WHERE id = ?", id.toString()) > 0;
     }
 }
