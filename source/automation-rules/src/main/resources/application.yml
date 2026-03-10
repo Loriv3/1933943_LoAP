@@ -1,6 +1,13 @@
 server:
   port: 8080
 
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+
 spring:
   datasource:
     url: jdbc:sqlite:/data/rules.db
