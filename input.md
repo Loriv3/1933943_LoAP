@@ -24,3 +24,112 @@ MarsOps is a distributed automation platform designed to guarantee the survival 
 18) As an operator, I want to manually toggle an actuator on or off from the dashboard so that I can intervene directly in emergency situations.
 19) As an operator, I want the actuator state to update in the dashboard immediately after every command (whether manual or triggered by a rule) so that I always have a consistent view.
 20) As the system, I want to keep the last known state of each actuator in memory so that the dashboard and the rule engine can access it without querying the environment every time.
+
+# EVENT SCHEMA:
+
+## MetricGroupStateEvent
+Represents a telemetry snapshot published by a sensor group to the message broker.
+
+| Field     | Type                      | Description                                        |
+|-----------|---------------------------|----------------------------------------------------|
+| `at`      | `Date`                    | Timestamp of when the snapshot was taken           |
+| `group_id`| `String`                  | Identifier of the sensor group (e.g. `greenhouse`) |
+| `metrics` | `List<MetricStateEvent>`  | List of individual metric readings in the group    |
+| `status`  | `GroupStatus` (nullable)  | Overall group status (`ok` or `warning`)           |
+
+## MetricStateEvent
+Represents the reading of a single metric within a group.
+
+| Field   | Type                           | Description                                      |
+|---------|--------------------------------|--------------------------------------------------|
+| `id`    | `String`                       | Metric identifier (e.g. `temperature`, `co2`)    |
+| `type`  | `String`                       | Sensor/metric type description                   |
+| `value` | `List<MetricStateEventValue>`  | One or more value readings for this metric       |
+
+## MetricStateEventValue
+A single unit-tagged value within a metric reading.
+
+| Field   | Type     | Description                          |
+|---------|----------|--------------------------------------|
+| `value` | `Object` | The raw measurement value            |
+| `unit`  | `String` | Unit of measurement (e.g. `°C`, `%`) |
+
+## ActuatorStateEvent
+Represents the current state of an actuator, published to the broker after any state change.
+
+| Field        | Type      | Description                                         |
+|--------------|-----------|-----------------------------------------------------|
+| `updated_at` | `Date`    | Timestamp of the last state change                  |
+| `actuator_id`| `String`  | Identifier of the actuator                          |
+| `is_on`      | `boolean` | Current ON/OFF state of the actuator                |
+
+## ActuatorCommand
+Command sent to an actuator to change its state, emitted by the rule engine when a rule fires.
+
+| Field        | Type      | Description                                           |
+|--------------|-----------|-------------------------------------------------------|
+| `updated_at` | `Date`    | Timestamp of the command                              |
+| `actuator_id`| `String`  | Target actuator identifier                            |
+| `is_on`      | `boolean` | Desired ON/OFF state                                  |
+| `rule_id`    | `UUID`    | ID of the rule that triggered the command             |
+| `reason`     | `Reason`  | Details of the condition that caused the rule to fire |
+
+# RULE MODEL:
+
+## Rule
+Persisted automation rule that associates a sensor condition with an actuator action.
+
+| Field           | Type       | Description                                              |
+|-----------------|------------|----------------------------------------------------------|
+| `id`            | `UUID`     | Unique rule identifier                                   |
+| `enabled`       | `boolean`  | Whether the rule is active and evaluated                 |
+| `created_at`    | `Date`     | Creation timestamp                                       |
+| `updated_at`    | `Date`     | Last modification timestamp                              |
+| `group_id`      | `String`   | Sensor group the rule listens to                         |
+| `metric_id`     | `String`   | Specific metric to evaluate within the group             |
+| `operator`      | `Operator` | Comparison operator (`lt`, `le`, `eq`, `gt`, `ge`)       |
+| `compare_value` | `Object`   | Threshold value to compare the metric against            |
+| `unit`          | `String`   | Expected unit of the metric value                        |
+| `actuator_id`   | `String`   | Actuator to command when the condition is met            |
+| `actuator_state`| `boolean`  | Desired actuator state (ON = `true`, OFF = `false`)      |
+
+## CreateRuleRequest
+DTO used when creating a new rule via the REST API.
+
+| Field           | Type       | Required | Description                                        |
+|-----------------|------------|----------|----------------------------------------------------|
+| `enabled`       | `boolean`  | No       | Defaults to `true`                                 |
+| `group_id`      | `String`   | Yes      | Sensor group identifier                            |
+| `metric_id`     | `String`   | Yes      | Metric identifier within the group                 |
+| `operator`      | `Operator` | Yes      | One of `lt`, `le`, `eq`, `gt`, `ge`               |
+| `compare_value` | `Object`   | Yes      | Threshold value                                    |
+| `unit`          | `String`   | Yes      | Unit of the metric                                 |
+| `actuator_id`   | `String`   | Yes      | Target actuator identifier                         |
+| `actuator_state`| `boolean`  | Yes      | Desired actuator state when condition is met       |
+
+## FiringRecord
+Audit record created each time a rule successfully fires and commands an actuator.
+
+| Field           | Type      | Description                                      |
+|-----------------|-----------|--------------------------------------------------|
+| `id`            | `UUID`    | Unique firing record identifier                  |
+| `rule_id`       | `UUID`    | ID of the rule that was triggered                |
+| `fired_at`      | `Date`    | Timestamp of when the rule fired                 |
+| `group_id`      | `String`  | Sensor group that provided the triggering event  |
+| `metric_id`     | `String`  | Metric whose value triggered the rule            |
+| `metric_value`  | `Object`  | Actual metric value at the time of firing        |
+| `metric_unit`   | `String`  | Unit of the metric value                         |
+| `actuator_id`   | `String`  | Actuator that was commanded                      |
+| `actuator_state`| `boolean` | State the actuator was commanded to              |
+
+## Operator
+Enum defining the comparison operators available for rule conditions.
+
+| Value | Meaning               |
+|-------|-----------------------|
+| `lt`  | Less than             |
+| `le`  | Less than or equal    |
+| `eq`  | Equal                 |
+| `gt`  | Greater than          |
+| `ge`  | Greater than or equal |
+
