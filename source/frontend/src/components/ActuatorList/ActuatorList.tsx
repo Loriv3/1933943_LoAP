@@ -8,6 +8,7 @@ export function ActuatorList() {
 
     return (
         <Container className="my-3">
+            <h1 className="text-center mb-3"><b>Actuators</b></h1>
             <Row className="g-3">
                 {...Object.values(actuators).map((actuator) => (
                     <Col key={actuator.id} xs={12} xl={6}>

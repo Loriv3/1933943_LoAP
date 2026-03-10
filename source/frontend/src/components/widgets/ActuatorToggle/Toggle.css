@@ -21,10 +21,10 @@
     border-radius: .4em;
     box-shadow: -1px -1px 2px inset #00000020;
     border: 1px solid #00000020;
-    transition: top .1s ease-in-out;
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: top .1s ease-in-out, background-color .1s ease-in-out;
 }
 
 .toggle-inner-spinner {
@@ -47,7 +47,8 @@
     top: 2.05em;
 }
 
-.toggle-on .toggle-inner-spinner, .toggle-off .toggle-inner-spinner {
+.toggle-on .toggle-inner-spinner,
+.toggle-off .toggle-inner-spinner {
     opacity: 0;
 }
 

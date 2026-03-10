@@ -2,7 +2,7 @@ import "./MetricHistoryVis.css";
 
 import { Chart as ChartJS, type ChartOptions } from "chart.js";
 import { useCallback, useEffect, useRef } from "react";
-import { binaryGradient, formatUnit, multiStopGradient } from "../../utils";
+import { binaryGradient, formatValueUnit, multiStopGradient } from "../../utils";
 import { MetricType, type MetricUnit } from "../../store/metrics/MetricHistory";
 
 const chartOptions = (unit: MetricUnit[]) =>
@@ -22,7 +22,7 @@ const chartOptions = (unit: MetricUnit[]) =>
             y: {
                 type: "linear",
                 ticks: {
-                    callback: (value) => formatUnit(value as number, unit[0]),
+                    callback: (value) => formatValueUnit(value as number, unit[0]),
                 },
             },
         },
@@ -34,7 +34,7 @@ const chartOptions = (unit: MetricUnit[]) =>
                 intersect: false,
                 callbacks: {
                     label: (value) =>
-                        formatUnit(value.parsed.y as number, unit[0]),
+                        formatValueUnit(value.parsed.y as number, unit[0]),
                 },
             },
         },
@@ -119,7 +119,7 @@ const transformData = (data: Data) => {
     if (result.length === 1) {
         result.push(result[0]);
     }
-    console.log(result);
+    result.sort((a, b) => a[0] - b[0]);
     return result;
 };
 

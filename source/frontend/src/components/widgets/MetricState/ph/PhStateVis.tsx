@@ -1,5 +1,5 @@
 import type { MetricUnit } from "../../../../store/metrics/MetricHistory";
-import { formatUnit, type CSSProperties } from "../../../../utils";
+import { formatValueUnit, type CSSProperties } from "../../../../utils";
 import "./PhStateVis.css";
 
 const phColors = [
@@ -70,7 +70,7 @@ export function PhStateVis({
         <div className="d-flex justify-content-center align-items-center">
             <PhScale value={value} size={size} />
             <h1 className="m-0 ms-3">
-                <b>{formatUnit(value, unit)}</b>
+                <b>{formatValueUnit(value, unit)}</b>
             </h1>
         </div>
     );

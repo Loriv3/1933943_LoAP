@@ -11,6 +11,8 @@ import { WidgetLocation } from "../widgets/WidgetLocation";
 import { MetricState } from "../widgets/MetricState/MetricState";
 import { MetricStateHistory } from "../widgets/MetricStateHistory/MetricStateHistory";
 import { NavLink } from "react-router";
+import { ActuatorToggle } from "../widgets/ActuatorToggle/ActuatorToggle";
+import { ActuatorHistory } from "../widgets/ActuatorHistory/ActuatorHistory";
 
 function widgetToVis(widget: DashboardWidgetPath) {
     switch (widget.variant) {
@@ -49,7 +51,21 @@ function widgetToVis(widget: DashboardWidgetPath) {
                 />
             );
         case DashboardWidgetVariant.ActuatorToggle:
+            return (
+                <ActuatorToggle
+                    key={dashboardWidgetId(widget)}
+                    actuatorId={widget.actuatorId}
+                    location={WidgetLocation.Dashboard}
+                />
+            );
         case DashboardWidgetVariant.ActuatorHistory:
+            return (
+                <ActuatorHistory
+                    key={dashboardWidgetId(widget)}
+                    actuatorId={widget.actuatorId}
+                    location={WidgetLocation.Dashboard}
+                />
+            );
     }
 }
 

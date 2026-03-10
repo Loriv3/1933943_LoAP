@@ -1,5 +1,5 @@
 import type { MetricUnit } from "../../../../store/metrics/MetricHistory";
-import { formatUnit, type CSSProperties } from "../../../../utils";
+import { formatValueUnitSplit, type CSSProperties } from "../../../../utils";
 import "./PressureStateVis.css";
 
 function Speedometer({
@@ -35,7 +35,7 @@ function Speedometer({
         }
     }
 
-    const valueFormatted = formatUnit(value, unit).split(" ", 2);
+    const [valueFormatted, unitFormatted] = formatValueUnitSplit(value, unit);
 
     return (
         <div
@@ -60,12 +60,10 @@ function Speedometer({
             <div className="speedometer-notch" />
             <div className="speedometer-value">
                 <span className="speedometer-value-value">
-                    {valueFormatted[0]}
+                    {valueFormatted}
                 </span>
                 <br />
-                <span className="speedometer-value-unit">
-                    {valueFormatted[1]}
-                </span>
+                <span className="speedometer-value-unit">{unitFormatted}</span>
             </div>
         </div>
     );

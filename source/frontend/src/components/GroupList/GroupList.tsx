@@ -11,7 +11,7 @@ import { NavLink } from "react-router";
 import { metricTypeIcons } from "../../metricTypeIcons";
 import { useAppSelector, useDashboardWidgets } from "../../store/store";
 import { wrapMetricsInitialized } from "../../utils/wrapMetricsInitialized";
-import { formatUnit } from "../../utils";
+import { formatValueUnit } from "../../utils";
 import {
     DashboardWidgetVariant,
     type DashboardWidgetPath,
@@ -27,6 +27,7 @@ export const GroupList = wrapMetricsInitialized(() => {
 
     return (
         <Container className="my-3">
+            <h1 className="text-center mb-3"><b>Metric Groups</b></h1>
             <Row className="g-3">
                 {...Object.values(groups).map((group) => {
                     const currentWidgets: DashboardWidgetPath[] = [];
@@ -139,7 +140,7 @@ export const GroupList = wrapMetricsInitialized(() => {
                                                                 {metric.name}
                                                             </h6>
                                                         </Nav.Item>
-                                                        <Nav.Item className="mx-4 text-muted">
+                                                        <Nav.Item className="me-2 text-muted">
                                                             {metric.measurements
                                                                 .length
                                                                 ? `${metric.measurements[
@@ -153,7 +154,7 @@ export const GroupList = wrapMetricsInitialized(() => {
                                                                               v,
                                                                               i
                                                                           ) =>
-                                                                              formatUnit(
+                                                                              formatValueUnit(
                                                                                   v,
                                                                                   metric
                                                                                       .unit[

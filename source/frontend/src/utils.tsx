@@ -158,7 +158,67 @@ export function arrayLast<T>(arr: T[] | null | undefined): T | null {
     return arr?.length ? arr[arr.length - 1] : null;
 }
 
-export function formatUnit(value: string | number, unit: MetricUnit) {
+const unitToFormatted = {
+    pH: "pH",
+    ppm: "ppm",
+    ppb: "ppb",
+    "%": "%",
+    "ug/m3": "ug/m3",
+    L: "L",
+    C: "°C",
+    kPa: "hPa",
+    "cyc/h": "cyc/h",
+    "uSv/h": "uSv/h",
+    kW: "kW",
+    kWh: "kWh",
+    V: "V",
+    A: "A",
+    "L/min": "L/min",
+    "": "",
+};
+
+export function formatUnit(unit: MetricUnit) {
+    return unitToFormatted[unit];
+}
+
+export function formatValueUnitSplit(value: string | number, unit: MetricUnit) {
+    switch (unit) {
+        case "pH":
+            return [(value as number).toFixed(2), "pH"];
+        case "ppm":
+            return [(value as number).toFixed(2), "ppm"];
+        case "ppb":
+            return [(value as number).toFixed(2), "ppb"];
+        case "%":
+            return [(value as number).toFixed(2), "%"];
+        case "ug/m3":
+            return [(value as number).toFixed(2), "ug/m3"];
+        case "L":
+            return [(value as number).toFixed(2), "L"];
+        case "C":
+            return [(value as number).toFixed(1), "°C"];
+        case "kPa":
+            return [((value as number) * 10).toFixed(2), "hPa"];
+        case "cyc/h":
+            return [(value as number).toFixed(3), "cyc/h"];
+        case "uSv/h":
+            return [(value as number).toFixed(2), "uSv/h"];
+        case "kW":
+            return [((value as number) / 1000).toFixed(2), "kW"];
+        case "kWh":
+            return [((value as number) / 1000).toFixed(2), "kWh"];
+        case "V":
+            return [(value as number).toFixed(2), "V"];
+        case "A":
+            return [(value as number).toFixed(2), "A"];
+        case "L/min":
+            return [(value as number).toFixed(2), "L/min"];
+        case "":
+            return [capitalize(value as string), ""];
+    }
+}
+
+export function formatValueUnit(value: string | number, unit: MetricUnit) {
     switch (unit) {
         case "pH":
             return `pH ${(value as number).toFixed(2)}`;
@@ -203,7 +263,7 @@ export const statusToBootstrapColor = {
 export function capitalize(value: string) {
     console.log(value);
     return value.charAt(0).toLocaleUpperCase() + value.slice(1);
-};
+}
 
 export function formatTime(seconds: number) {
     let result = "";

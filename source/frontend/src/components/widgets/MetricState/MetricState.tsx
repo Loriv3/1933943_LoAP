@@ -1,5 +1,5 @@
 import { Button, Card, Collapse, Nav } from "react-bootstrap";
-import { arrayLast, formatTime, formatUnit, useTimer } from "../../../utils";
+import { arrayLast, formatTime, formatValueUnit, useTimer } from "../../../utils";
 import { useState } from "react";
 import { visualizerTypes } from "./visualizerTypes";
 import { metricTypeIcons } from "../../../metricTypeIcons";
@@ -88,7 +88,7 @@ export function MetricState({
                                     {value
                                         ? value
                                               .map((v, i) =>
-                                                  formatUnit(v, metric.unit[i])
+                                                  formatValueUnit(v, metric.unit[i])
                                               )
                                               .join(", ")
                                         : "No Value"}

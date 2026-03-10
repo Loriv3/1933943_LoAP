@@ -1,0 +1,22 @@
+.automation-rule-keyword,
+.automation-rule-name,
+.automation-rule-value,
+.automation-rule-unit {
+    font-family: Courier, monospace;
+}
+
+.automation-rule-keyword {
+    color: #AF01DB;
+}
+
+.automation-rule-name {
+    color: #A31515;
+}
+
+.automation-rule-value {
+    color: #0B8658;
+}
+
+.automation-rule-unit {
+    color: #0000FF;
+}

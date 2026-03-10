@@ -1,5 +1,5 @@
 import type { MetricUnit } from "../../../../store/metrics/MetricHistory";
-import { formatUnit, type CSSProperties } from "../../../../utils";
+import { formatValueUnit, type CSSProperties } from "../../../../utils";
 import "./WaterLevelStateVis.css";
 
 function WaterLevelScale({
@@ -57,10 +57,10 @@ function WaterLevelScale({
             ) : (
                 <div className="water-level-value">
                     <div className="water-level-value-percent">
-                        {formatUnit(valuePercent, unitPercent)}
+                        {formatValueUnit(valuePercent, unitPercent)}
                     </div>
                     <div className="water-level-value-liters">
-                        {formatUnit(valueLiters, unitLiters)}
+                        {formatValueUnit(valueLiters, unitLiters)}
                     </div>
                 </div>
             )}

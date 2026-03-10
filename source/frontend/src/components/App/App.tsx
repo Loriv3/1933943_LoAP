@@ -86,6 +86,9 @@ function AppInner() {
                         <Nav.Link as={NavLink} to="/actuators">
                             Actuators
                         </Nav.Link>
+                        <Nav.Link as={NavLink} to="/automations">
+                            Automations
+                        </Nav.Link>
                     </Nav>
                     <Nav.Item
                         className="me-3 d-flex navbar-status"

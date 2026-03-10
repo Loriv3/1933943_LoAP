@@ -60,7 +60,7 @@ const transformData = (data: Data) => {
     if (result.length === 1) {
         result.push(result[0]);
     }
-    console.log(result);
+    result.sort((a, b) => a[0] - b[0]);
     return result;
 };
 

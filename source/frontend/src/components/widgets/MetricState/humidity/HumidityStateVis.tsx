@@ -1,5 +1,5 @@
 import type { MetricUnit } from "../../../../store/metrics/MetricHistory";
-import { formatUnit, type CSSProperties } from "../../../../utils";
+import { formatValueUnit, type CSSProperties } from "../../../../utils";
 import "./HumidityStateVis.css";
 
 function HumidityScale({ value, size }: { value: number; size: number }) {
@@ -16,7 +16,7 @@ function HumidityScale({ value, size }: { value: number; size: number }) {
                 className="humidity-scale-fill"
                 style={
                     {
-                        "--value": value,
+                        "--value": value / 100,
                     } as CSSProperties
                 }
             />
@@ -36,7 +36,7 @@ export function HumidityStateVis({
         <div className="d-flex justify-content-center align-items-center">
             <HumidityScale value={value} size={size} />
             <h1 className="m-0 ms-3">
-                <b>{formatUnit(value, unit)}</b>
+                <b>{formatValueUnit(value, unit)}</b>
             </h1>
         </div>
     );
