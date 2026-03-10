@@ -146,13 +146,13 @@ The service itself is stateless.
   - REST API: Provides grouped and granular access to cached state data.
 
 - ENDPOINTS: no endpoints exposed
+
 | HTTP METHOD | URL | Description | User Stories |
 | ----------- | --- | ----------- | ------------ |
 | GET | `/api/metrics` | Returns a JSON dictionary of the latest known state of all devices from Redis. | 17,20 |
 | GET | `/api/metrics/{group_id}` | Returns the latest state of a specific sensor group from Redis. | 16 |
 | POST | `/api/actuators` | Returns a JSON dictionary of the latest known ON/OFF state of all actuators from Redis. | 18, 19 |
 | GET | `/api/actuators/{actuator_id}` | Returns the latest state of a specific actuator from Redis. | 17,20 |
-
 
 
 
@@ -193,10 +193,10 @@ The service is stateless.
 
 Thread-safe Coroutines: Utilizes asyncio.run_coroutine_threadsafe to safely communicate incoming events from the synchronous AMQP consumer thread to the asynchronous FastAPI WebSocket broadcaster.
 - ENDPOINTS:
+
 | HTTP METHOD | URL | Description | User Stories |
 | ----------- | --- | ----------- | ------------ |
 | GET | `/api/metrics/discover` | Retrieves the list of available metric groups and their metadata by querying the cache service. | 16 |
-
 
 
 ## CONTAINER_NAME: actuator_service
