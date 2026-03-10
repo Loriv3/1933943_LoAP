@@ -117,8 +117,7 @@ A Python-based FastAPI service that serves as the real-time state synchronizatio
 16, 17, 19, 20
 
 ### PORTS: 
-- 8081 (exposed)
-- 8080 (internal)
+- `8080`, mapped to `8081` on host
 
 
 ### PERSISTENCE EVALUATION
@@ -133,8 +132,7 @@ The service itself is stateless.
 - TYPE: backend
 - DESCRIPTION: Manages the life cycle of real-time data ingestion and serves as the primary data provider for the frontend dashboard initial load.
 - PORTS: 
-  - 8080 (internal)
-  - 8081 (exposed)
+  - `8080`, mapped to `8081` on host
 - TECHNOLOGICAL SPECIFICATION: 
   - Python 3.12-slim
   - Runtime: Python 3.12-slim
@@ -166,8 +164,7 @@ Python/FastAPI microservice responsible for the real-time distribution of teleme
 11, 16
 
 ### PORTS:
-- 8082 (external)
-- 8080 (internal)
+- `8080`, mapped to `8082` on host
 
 ### PERSISTENCE EVALUATION
 The service is stateless.
@@ -183,8 +180,7 @@ The service is stateless.
 - TYPE: backend / real-time streamer
 - DESCRIPTION: Asynchronous handler for exposing and broadcasting environmental metrics.
 - PORTS:
-  - 8082 (external)
-  - 8080 (internal)
+  - `8080`, mapped to `8082` on host
 - TECHNOLOGICAL SPECIFICATION:
   - Python 3.12, FastAPI, WebSockets, httpx (HTTP client), python-qpid-proton (AMQP 1.0).
   - SERVICE ARCHITECTURE:
@@ -209,7 +205,7 @@ Python/FastAPI microservice acting as the state manager and API Gateway. It cons
 11, 16, 17, 18, 19, 20
 
 ### PORTS:
-- `8080` (FastAPI web server)
+- `8080`: FastAPI web server, mapped to `8083` on host
 
 ### PERSISTENCE EVALUATION
 Stateless service. State persistence is delegated entirely to the `redis` container. 
@@ -224,7 +220,7 @@ Stateless service. State persistence is delegated entirely to the `redis` contai
 #### MICROSERVICE: actuator-service
 - TYPE: backend
 - DESCRIPTION: Real-time state cache, WebSocket broadcaster, and Actuator API Facade.
-- PORTS: `8080` (internal container), published as `8080`.
+- PORTS: `8080`, published as `8083`.
 - TECHNOLOGICAL SPECIFICATION:
 	- Python 3.12
 	- Web Framework: FastAPI + Uvicorn
@@ -329,7 +325,7 @@ Spring Boot backend service that stores automation rules, consumes telemetry eve
 6, 7, 8, 9, 10, 15, 17, 19, 20
 
 ### PORTS:
-- `8082` on host mapped to `8080` in container.
+- `8084` on host mapped to `8080` in container.
 
 ### PERSISTENCE EVALUATION
 SQLite database persisted on Docker volume:
@@ -349,7 +345,7 @@ SQLite database persisted on Docker volume:
 #### MICROSERVICE: automation-rules
 - TYPE: backend
 - DESCRIPTION: rule management and real-time automation engine.
-- PORTS: `8080` (internal container), published as `8082`.
+- PORTS: `8080`, published as `8084`.
 - TECHNOLOGICAL SPECIFICATION:
 	- Java 21, Spring Boot 3.3.2
 	- Spring Web, Spring JDBC, Spring Artemis JMS
@@ -364,64 +360,51 @@ SQLite database persisted on Docker volume:
 - ENDPOINTS:
 | HTTP METHOD | URL | Description | User Stories |
 | ----------- | --- | ----------- | ------------ |
-| GET         | `/health`                    | Service health with broker connectivity flag (`brokerConnected`)                  | 15    |
-| GET         | `/api/health`                | Alias of `/health`                                                                | 15    |
-| GET         | `/api/rules`                 | List all rules                                                                    | 9     |
-| POST        | `/api/rules`                 | Create rule                                                                       | 6, 14 |
-| PUT         | `/api/rules/{id}`            | Replace existing rule (404 if not found)                                          | 6, 9  |
-| PATCH       | `/api/rules/{id}/enabled`    | Enable/disable rule                                                               | 9 |
+| GET         | `/health`                    | Service health with broker connectivity flag (`brokerConnected`)                  | 15     |
+| GET         | `/api/health`                | Alias of `/health`                                                                | 15     |
+| GET         | `/api/rules`                 | List all rules                                                                    | 9      |
+| GET         | `/api/rules/{id}`            | Get rule with specified id                                                        | 9      |
+| POST        | `/api/rules`                 | Create rule                                                                       | 6, 14  |
+| PUT         | `/api/rules/{id}`            | Replace existing rule (404 if not found)                                          | 6, 9   |
+| PATCH       | `/api/rules/{id}/enabled`    | Enable/disable rule                                                               | 9      |
 | DELETE      | `/api/rules/{id}`            | Delete rule                                                                       | 10, 14 |
-| GET         | `/api/rule-firings?limit=50` | List recent rule firing records                                                   | 7, 9 |
+| GET         | `/api/rule-firings?limit=50` | List recent rule firing records                                                   | 7, 9   |
 
 - MESSAGE CONTRACTS:
 
 1. Accepted telemetry payloads on topic `sensor.events`:
-	 - Legacy single event format:
-		 ```json
-		 {
-			 "event_time": "2026-03-06T14:00:00Z",
-			 "kind": "sensor",
-			 "sensor_name": "greenhouse_temperature.value",
-			 "value": 29.0,
-			 "unit": "C",
-			 "status": "ok"
-		 }
-		 ```
-	 - Grouped metrics format:
-		 ```json
-		 {
-			 "group_id": "air_quality",
-			 "updated_at": "2026-03-06T01:53:34.247Z",
-			 "metrics": [
-				 {
-					 "metric_id": "voc",
-					 "type": "air_quality.particle_volume_concentration",
-					 "value": [{"value": 0.60448, "unit": "ppm"}]
-				 }
-			 ],
-			 "status": "warning"
-		 }
-		 ```
-		 Internally transformed to sensor names like `air_quality.voc`.
+	```json
+	{
+		"group_id": "air_quality",
+		"updated_at": "2026-03-06T01:53:34.247Z",
+		"metrics": [
+			{
+				"metric_id": "voc",
+				"type": "air_quality.particle_volume_concentration",
+				"value": [{"value": 0.60448, "unit": "ppm"}]
+			}
+		],
+		"status": "warning"
+	}
+	```
 
 2. Produced command payload on queue `actuator.commands`:
-	 ```json
-	 {
-		 "issued_at": "2026-03-06T14:00:03Z",
-		 "updated_at": "2026-03-06T14:00:03Z",
-		 "actuator_name": "cooling_fan",
-		 "actuator_id": "cooling_fan",
-		 "state": "ON",
-		 "is_on": true,
-		 "rule_id": "6d5d2a0d-3c5a-4c1a-9bb4-7bf3fcd5a233",
-		 "reason": {
-			 "sensor_name": "greenhouse_temperature.value",
-			 "value": 29.0,
-			 "operator": ">",
-			 "threshold": 28.0
-		 }
-	 }
-	 ```
+	```json
+	{
+		"updated_at": "2026-03-06T14:00:03Z",
+		"actuator_id": "cooling_fan",
+		"is_on": true,
+		"rule_id": "6d5d2a0d-3c5a-4c1a-9bb4-7bf3fcd5a233",
+		"reason": {
+			"group_id": "air_quality",
+			"metric_id": "voc",
+			"value": 29.0,
+			"unit": "ppm",
+			"operator": ">",
+			"threshold": 28.0
+		}
+	}
+	```
 
 - RULE ENGINE POLICIES:
 	- Valid operators: `<`, `<=`, `=`, `>`, `>=`.
@@ -439,12 +422,12 @@ SQLite database persisted on Docker volume:
 - DB STRUCTURE:
 
 	**_rules_**:
-	| **id** | enabled | sensor_name | operator | threshold_value | unit | actuator_name | target_state | created_at | updated_at |
-	| ------ | ------- | ----------- | -------- | --------------- | ---- | ------------- | ------------ | ---------- | ---------- |
+	| **id** | enabled | group_id    | sensor_id | operator | compare_value_str | compare_value_double | unit | actuator_id   | actuator_state | created_at | updated_at |
+	| ------ | ------- | ----------- | --------- | -------- | ----------------- | -------------------- | ---- | ------------- | -------------- | ---------- | ---------- |
 
 	**_rule_firings_**:
-	| **id** | rule_id | fired_at | sensor_name | sensor_value | actuator_name | target_state |
-	| ------ | ------- | -------- | ----------- | ------------ | ------------- | ------------ |
+	| **id** | rule_id | fired_at | group_id    | metric_id | metric_value_str | metric_value_double | metric_unit | actuator_id   | actuator_state |
+	| ------ | ------- | -------- | ----------- | --------- | ---------------- | ------------------- | ----------- | ------------- | -------------- |
 
 
 
