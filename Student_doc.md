@@ -125,9 +125,8 @@ A Python-based FastAPI service that serves as the real-time state synchronizatio
 The service itself is stateless.
 
 ### EXTERNAL SERVICES CONNECTIONS
-* ActiveMQ Artemis: Connects via AMQP 1.0 to consume normalized events from sensor.events and actuator.states topics.
-
-* Redis: Connects to the redis host on port 6379 to perform atomic SET/GET operations on state snapshots.
+- ActiveMQ Artemis: Connects via AMQP 1.0 to consume normalized events from sensor.events and actuator.states topics.
+- Redis: Connects to the redis host on port 6379 to perform atomic SET/GET operations on state snapshots.
 
 
 #### MICROSERVICE: cache-service
@@ -159,32 +158,45 @@ The service itself is stateless.
 
 ## CONTAINER_NAME: metrics_service
 
-### DESCRIPTION:
+### DESCRIPTION: 
+Python/FastAPI microservice responsible for the real-time distribution of telemetry data to the frontend. It acts as a WebSocket hub: it continuously consumes events from the message broker (ActiveMQ).
 
 
 ### USER STORIES:
-
+11, 16
 
 ### PORTS:
-
+- 8082 (external)
+- 8080 (internal)
 
 ### PERSISTENCE EVALUATION
-
+The service is stateless.
 
 ### EXTERNAL SERVICES CONNECTIONS
-
+- ActiveMQ Artemis: Consumes telemetry events from the sensor.events topic via AMQP.
+- Cache Service: Queried via HTTP (using the CACHE_URL environment variable) to retrieve the current values upon establishing WebSocket connections or for discovery.
+- Frontend Clients: Manages persistent WebSocket connections to push data streams.
 
 ### MICROSERVICES:
 
 #### MICROSERVICE: metrics-service
-- TYPE: backend
-- DESCRIPTION:
+- TYPE: backend / real-time streamer
+- DESCRIPTION: Asynchronous handler for exposing and broadcasting environmental metrics.
 - PORTS:
+  - 8082 (external)
+  - 8080 (internal)
 - TECHNOLOGICAL SPECIFICATION:
-- SERVICE ARCHITECTURE:
+  - Python 3.12, FastAPI, WebSockets, httpx (HTTP client), python-qpid-proton (AMQP 1.0).
+  - SERVICE ARCHITECTURE:
+  - Threaded AMQP Consumer: A dedicated thread listens to the broker to prevent blocking the asynchronous web server's event loop.
+  - Async Connection Manager: Tracks active WebSocket connections and their subscriptions (global or per-group).
+
+Thread-safe Coroutines: Utilizes asyncio.run_coroutine_threadsafe to safely communicate incoming events from the synchronous AMQP consumer thread to the asynchronous FastAPI WebSocket broadcaster.
 - ENDPOINTS:
 | HTTP METHOD | URL | Description | User Stories |
 | ----------- | --- | ----------- | ------------ |
+| GET | `/api/metrics/discover` | Retrieves the list of available metric groups and their metadata by querying the cache service. | 16 |
+
 
 
 ## CONTAINER_NAME: actuator_service
