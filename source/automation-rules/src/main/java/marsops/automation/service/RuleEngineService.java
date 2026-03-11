@@ -68,9 +68,9 @@ public class RuleEngineService {
                         if (!rule.getOperator().evaluateString(value_, compareValue_)) {
                             continue;
                         }
-                    } else if (value.getValue() instanceof Double value_
-                            && rule.getCompareValue() instanceof Double compareValue_) {
-                        if (!rule.getOperator().evaluateDouble(value_, compareValue_)) {
+                    } else if (value.getValue() instanceof Number value_
+                            && rule.getCompareValue() instanceof Number compareValue_) {
+                        if (!rule.getOperator().evaluateNumber(value_, compareValue_)) {
                             continue;
                         }
                     } else {

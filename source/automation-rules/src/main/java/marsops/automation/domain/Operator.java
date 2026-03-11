@@ -31,13 +31,15 @@ public enum Operator {
         return this.value;
     }
 
-    public boolean evaluateDouble(double left, double right) {
+    public boolean evaluateNumber(Number left, Number right) {
+        double left_ = left.doubleValue();
+        double right_ = right.doubleValue();
         return switch (this) {
-            case LT -> left < right;
-            case LE -> left <= right;
-            case EQ -> Double.compare(left, right) == 0;
-            case GT -> left > right;
-            case GE -> left >= right;
+            case LT -> left_ < right_;
+            case LE -> left_ <= right_;
+            case EQ -> Double.compare(left_, right_) == 0;
+            case GT -> left_ > right_;
+            case GE -> left_ >= right_;
         };
     }
 

@@ -85,7 +85,7 @@ public class RuleRepository {
                 metricId,
                 operator.toValue(),
                 compareValue instanceof String s ? s : null,
-                compareValue instanceof Double d ? d : null,
+                compareValue instanceof Number n ? n.doubleValue() : null,
                 unit,
                 actuatorId,
                 actuatorState);
@@ -119,7 +119,7 @@ public class RuleRepository {
                 metricId,
                 operator.toValue(),
                 compareValue instanceof String s ? s : null,
-                compareValue instanceof Double d ? d : null,
+                compareValue instanceof Number n ? n.doubleValue() : null,
                 unit,
                 actuatorId,
                 actuatorState,

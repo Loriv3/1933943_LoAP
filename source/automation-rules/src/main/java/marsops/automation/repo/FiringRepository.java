@@ -36,7 +36,7 @@ public class FiringRepository {
                 record.getGroupId(),
                 record.getMetricId(),
                 record.getMetricValue() instanceof String s ? s : null,
-                record.getMetricValue() instanceof Double d ? d : null,
+                record.getMetricValue() instanceof Number n ? n.doubleValue() : null,
                 record.getMetricUnit(),
                 record.getActuatorId(),
                 record.isActuatorState());
